@@ -98,9 +98,6 @@ class Maze {
 		// THIS IS THE FUINCTION YOU SHOULD MODIFY.
 		void	Draw_View(const float);
 
-		// Draws the Walls
-		void Draw_Wall(const float start[2], const float end[2], const float color[3]);
-
 		// Save the maze to a file of the given name.
 		bool	Save(const char*);
 

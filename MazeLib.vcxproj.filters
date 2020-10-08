@@ -1,45 +1,45 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\nb\Desktop\MazeVisibility\src\Cell.cpp">
+    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\Cell.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\nb\Desktop\MazeVisibility\src\Edge.cpp">
+    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\Edge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\nb\Desktop\MazeVisibility\src\LineSeg.cpp">
+    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\LineSeg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\nb\Desktop\MazeVisibility\src\Vertex.cpp">
+    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\Vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\nb\Desktop\MazeVisibility\src\Cell.h">
+    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\Cell.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\nb\Desktop\MazeVisibility\src\Edge.h">
+    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\Edge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\nb\Desktop\MazeVisibility\src\LineSeg.h">
+    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\LineSeg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\nb\Desktop\MazeVisibility\src\Point.h">
+    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\Point.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\nb\Desktop\MazeVisibility\src\Vertex.h">
+    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\src\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\nb\Desktop\MazeVisibility\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\pppoo\Desktop\Github projects\MazeVisibility\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{C513EF32-3E81-36B0-8355-6E4289BCC18E}</UniqueIdentifier>
+      <UniqueIdentifier>{CCC85940-0C25-3D5E-8C1F-55A60F5FFD43}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{8AF6E9FB-F68F-33A7-B90B-F2D0BCD9AABA}</UniqueIdentifier>
+      <UniqueIdentifier>{8EAB95C0-B88C-30AB-AB5B-A657346364FB}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
