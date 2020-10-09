@@ -1,4 +1,0 @@
-C:/Users/pppoo/Desktop/Github projects/MazeVisibility/CMakeFiles/MazeVisibility.dir
-C:/Users/pppoo/Desktop/Github projects/MazeVisibility/CMakeFiles/MazeLib.dir
-C:/Users/pppoo/Desktop/Github projects/MazeVisibility/CMakeFiles/ALL_BUILD.dir
-C:/Users/pppoo/Desktop/Github projects/MazeVisibility/CMakeFiles/ZERO_CHECK.dir
