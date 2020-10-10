@@ -641,7 +641,7 @@ Draw_View(const float focal_dist)
 	
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 	for (int i = 0; i < (int)num_edges; ++i) {
 		float edge_start[2] = {
 			edges[i]->endpoints[Edge::START]->posn[Vertex::X],

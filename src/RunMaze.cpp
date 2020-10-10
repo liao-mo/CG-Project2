@@ -31,16 +31,16 @@
 #include <Fl/Fl_Window.h>
 
 // Constants related to the interface
-static const int    MAP_WINDOW_W = 400;
-static const int    MAP_WINDOW_H = 400;
-static const int    MAZE_WINDOW_W = 600;
-static const int    MAZE_WINDOW_H = 600;
+static const int    MAP_WINDOW_W = 400*2;
+static const int    MAP_WINDOW_H = 400*2;
+static const int    MAZE_WINDOW_W = 600*2;
+static const int    MAZE_WINDOW_H = 600*2;
 static const int    BUTTON_W = 100;
 static const int    BUTTON_H = 25;
 static const int    GAP = 5;
 
 // The time per frame, in seconds (enforced only by timeouts.)
-static const float  frame_time = 0.05f;
+static const float  frame_time = 0.0016f;
 
 // Global variables
 static MapWidget    *map_window;  // The window with the map of the maze in it.
