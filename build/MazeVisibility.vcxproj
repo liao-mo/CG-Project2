@@ -312,7 +312,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\Matrices.h" />
+    <ClInclude Include="..\src\Vectors.h" />
     <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\MapWidget.h" />
+    <ClCompile Include="..\src\Matrices.cpp" />
     <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\MapWidget.cpp" />
     <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Maze.h" />
     <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Maze.cpp" />

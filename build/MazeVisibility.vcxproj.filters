@@ -13,6 +13,9 @@
     <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\RunMaze.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Matrices.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\MapWidget.h">
@@ -22,6 +25,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\MazeWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Matrices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Vectors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
