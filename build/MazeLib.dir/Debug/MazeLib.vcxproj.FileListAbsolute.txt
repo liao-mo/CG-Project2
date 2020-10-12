@@ -1,2 +1,0 @@
-C:\Users\pppoo\Desktop\Github projects\CG-Project2\build\Debug\MazeLib.pdb
-C:\Users\pppoo\Desktop\Github projects\CG-Project2\build\MazeLib.dir\Debug\MazeLib.pdb

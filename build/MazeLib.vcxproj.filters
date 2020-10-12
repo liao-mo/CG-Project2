@@ -1,45 +1,45 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Cell.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\CG-Project2\src\Cell.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Edge.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\CG-Project2\src\Edge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\LineSeg.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\CG-Project2\src\LineSeg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Vertex.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\CG-Project2\src\Vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Cell.h">
+    <ClInclude Include="C:\Users\USER\Desktop\CG-Project2\src\Cell.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Edge.h">
+    <ClInclude Include="C:\Users\USER\Desktop\CG-Project2\src\Edge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\LineSeg.h">
+    <ClInclude Include="C:\Users\USER\Desktop\CG-Project2\src\LineSeg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Point.h">
+    <ClInclude Include="C:\Users\USER\Desktop\CG-Project2\src\Point.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\src\Vertex.h">
+    <ClInclude Include="C:\Users\USER\Desktop\CG-Project2\src\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\pppoo\Desktop\Github projects\CG-Project2\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\USER\Desktop\CG-Project2\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{A72E2DF7-9A41-33A8-9C9B-67A7EBEC6D7C}</UniqueIdentifier>
+      <UniqueIdentifier>{98F16C92-534D-3642-BD9A-3E195CADF539}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{FE5D6E70-4A87-3608-906D-5EB3A8D18940}</UniqueIdentifier>
+      <UniqueIdentifier>{3B448454-ED5C-34B8-ACC8-96B064F5C978}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
