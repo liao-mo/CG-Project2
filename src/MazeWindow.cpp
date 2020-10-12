@@ -22,6 +22,11 @@
 #include <Fl/gl.h>
 #include <GL/glu.h>
 #include <stdio.h>
+#include "Matrices.h"
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
 
 
 //*************************************************************************
@@ -122,29 +127,101 @@ draw(void)
 		// Note that all the information that is required to do the
 		// transformations and projection is contained in the Maze class,
 		// plus the focal length.
+
 		glClear(GL_DEPTH_BUFFER_BIT);
 
+		////////////////////////////
+		//build my modelview matrix
+		////////////////////////////
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		float aspect = (float)w() / h();
-		gluPerspective(maze->viewer_fov, aspect, 0.01, 200);
+		//can't use this function
+		float aspect = (float)(w() / h());
+		//gluPerspective(maze->viewer_fov, aspect, 0.01, 200);
 
+		////////////////////////////
+		//build my modelview matrix
+		////////////////////////////
+		Matrix4 projection_matrix = construct_perspective_projection_matrix(maze->viewer_fov, (float)(w() / h()), 0.01, 200);
+
+		//debug
+		//display my projection matrix
+		//cout << "projection matrix: " << endl;
+		//cout << projection_matrix << endl;
+
+		//apply this projection matrix
+		glMultMatrixf(projection_matrix.get());
+
+		//Debug
+		//get projection_matrix
+		//double _projection_matrix[16];
+		//glGetDoublev(GL_PROJECTION_MATRIX, _projection_matrix);
+		//cout << "projection matrix 10x10-100: " << endl;
+		//for (int i = 0; i < 16; ++i) {
+		//	if (i % 4 == 0) cout << endl;
+		//	cout << setw(10) << _projection_matrix[i] << " ";
+		//}
+		//cout << "\n\n";
+
+
+
+		////////////////////////////
+		//set model view matrix
+		////////////////////////////
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
 		float viewer_pos[3] = { maze->viewer_posn[Maze::Y], 0.0f, maze->viewer_posn[Maze::X] };
-		gluLookAt(
-			viewer_pos[Maze::X],
-			viewer_pos[Maze::Y],
-			viewer_pos[Maze::Z],
-			viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
-			viewer_pos[Maze::Y],
-			viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)),
-			0.0,
-			1.0,
-			0.0);
+		////////////////////////////
+		//can't use this function
+		////////////////////////////
+		//gluLookAt(
+		//	viewer_pos[Maze::X],
+		//	viewer_pos[Maze::Y],
+		//	viewer_pos[Maze::Z],
+		//	viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
+		//	viewer_pos[Maze::Y],
+		//	viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)),
+		//	0.0,
+		//	1.0,
+		//	0.0);
 
+		////////////////////////////
+		//build my modelview matrix
+		////////////////////////////
+		//construct eye position vector
+		Vector3 eye_pos;
+		eye_pos.set(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z]);
+
+		//construct target vector
+		Vector3 targetVector;
+		targetVector.set(viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)), viewer_pos[Maze::Y], viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)));
+
+		//construct up direction vector
+		Vector3 upDirection;
+		upDirection.set(0.0, 0.1, 0.0);
+
+		//initialize 4x4 modelview matrix
+		Matrix4 modelview_matrix = construct_modelview_matrix(eye_pos, targetVector, upDirection);
+
+		//apply this modelview matrix
+		glMultMatrixf(modelview_matrix.get());
+
+		//cout << "my modelview matrix: " << endl;
+		//cout << modelview_matrix << endl;
+		
+
+		//Debug
+		//get projection_matrix
+		//double _modelview_matrix[16];
+		//glGetDoublev(GL_MODELVIEW_MATRIX, _modelview_matrix);
+		//cout << "glu modelview matrix 10x10-100: " << endl;
+		//for (int i = 0; i < 16; ++i) {
+		//	if (i % 4 == 0) cout << endl;
+		//	cout << setw(10) << _modelview_matrix[i] << " ";
+		//}
+		//cout << "\n\n";
 
 		maze->Draw_View(focal_length);
 	}
@@ -186,7 +263,7 @@ Drag(float dt)
 
 	// Tell the maze how much the view has moved. It may restrict the motion
 	// if it tries to go through walls.
-	maze->Move_View_Posn(x_move, y_move, z_move);
+	maze->Move_View_Posn(x_move*10, y_move*10, z_move*10);
 
 	return true;
 }
@@ -237,7 +314,6 @@ handle(int event)
 			down = false;
 			return 1;
 		case FL_KEYBOARD:
-			/*
 			if ( Fl::event_key() == FL_Up )	{
 				z_key = 1;
 				return 1;
@@ -246,7 +322,14 @@ handle(int event)
 				z_key = -1;
 				return 1;
 			}
-			*/
+			if (Fl::event_key() == FL_Left) {
+				//z_key = 1;
+				return 1;
+			}
+			if (Fl::event_key() == FL_Right) {
+				//z_key = -1;
+				return 1;
+			}
 			return Fl_Gl_Window::handle(event);
 		case FL_FOCUS:
 		case FL_UNFOCUS:
@@ -257,4 +340,73 @@ handle(int event)
 	return Fl_Gl_Window::handle(event);
 }
 
+Matrix4& MazeWindow::construct_perspective_projection_matrix(float fov_angle, float aspect, float z_near, float z_far) {
+	//find the values that can describe the pyramid
+	float x_right, x_left, y_top, y_bottom;
+	y_top = z_near * tanf(Maze::To_Radians(fov_angle) / 2.0);
+	y_bottom = -y_top;
+	x_right = y_top * aspect;
+	x_left = -x_right;
 
+	float x_width = x_right - x_left;
+	float y_height = y_top - y_bottom;
+
+	//construct 4x4 projection matrix
+	Matrix4 projection_matrix;
+	projection_matrix[0] = 2.0 * z_near / x_width;
+	projection_matrix[1] = 0;
+	projection_matrix[2] = 0;
+	projection_matrix[3] = 0;
+	projection_matrix[4] = 0;
+	projection_matrix[5] = 2.0 * z_near / y_height;
+	projection_matrix[6] = 0;
+	projection_matrix[7] = 0;
+	projection_matrix[8] = (x_right + x_left) / x_width;
+	projection_matrix[9] = (y_top + y_bottom) / y_height;
+	projection_matrix[10] = -(z_far + z_near) / (z_far - z_near);
+	projection_matrix[11] = -1.0;
+	projection_matrix[12] = 0;
+	projection_matrix[13] = 0;
+	projection_matrix[14] = -2.0 * z_far * z_near / (z_far - z_near);
+	projection_matrix[15] = 0;
+	
+	return projection_matrix;
+}
+
+Matrix4& MazeWindow::construct_modelview_matrix(Vector3 eye_pos, Vector3 target_vec, Vector3 up_dir) {
+	Matrix4 modelview_matrix;
+	modelview_matrix.identity();
+
+	//forwardVector is the vector from eye to target
+	Vector3 forwardVector = target_vec - eye_pos;
+	forwardVector.normalize(); // make it unit length
+
+	//compute the left vector
+	Vector3 leftVector = up_dir.cross(forwardVector); // cross product
+	leftVector.normalize(); // make it unit length
+
+	//recompute the orthonormal up vector by forward and left vector
+	Vector3 upVector = forwardVector.cross(leftVector); // cross product
+
+	// set rotation part of this matrix
+	modelview_matrix[0] = leftVector.x;
+	modelview_matrix[4] = leftVector.y;
+	modelview_matrix[8] = leftVector.z;
+	modelview_matrix[1] = upVector.x;
+	modelview_matrix[5] = upVector.y;
+	modelview_matrix[9] = upVector.z;
+	modelview_matrix[2] = forwardVector.x;
+	modelview_matrix[6] = forwardVector.y;
+	modelview_matrix[10] = forwardVector.z;
+
+	// set translation part of this matrix
+	modelview_matrix[12] = -leftVector.x * eye_pos.x - leftVector.y * eye_pos.y - leftVector.z * eye_pos.z;
+	modelview_matrix[13] = -upVector.x * eye_pos.x - upVector.y * eye_pos.y - upVector.z * eye_pos.z;
+	modelview_matrix[14] = -forwardVector.x * eye_pos.x - forwardVector.y * eye_pos.y - forwardVector.z * eye_pos.z;
+
+	//mutiply -1 to the matrix expect homogeneous coordinate
+	modelview_matrix = -1 * modelview_matrix;
+	modelview_matrix[15] = 1;
+
+	return modelview_matrix;
+}

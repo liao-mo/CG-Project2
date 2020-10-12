@@ -502,9 +502,9 @@ Move_View_Posn(const float dx, const float dy, const float dz)
 
 	// Fix the z to keep it in the maze.
 	if ( ze > 1.0f - BUFFER )
-		ze = 1.0f - BUFFER;
+		//ze = 1.0f - BUFFER;
 	if ( ze < BUFFER - 1.0f )
-		ze = BUFFER - 1.0f;
+		//ze = BUFFER - 1.0f;
 
 	// Clip_To_Cell clips the motion segment to the view_cell if the
 	// segment intersects an opaque edge. If the segment intersects

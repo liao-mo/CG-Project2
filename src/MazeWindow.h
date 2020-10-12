@@ -24,6 +24,7 @@
 #include <Fl/Fl_Gl_Window.h>
 
 #include "Maze.h"
+#include "Matrices.h"
 
 // Subclass the Fl_Gl_Window because we want to draw OpenGL in here.
 class MazeWindow : public Fl_Gl_Window {
@@ -46,6 +47,12 @@ class MazeWindow : public Fl_Gl_Window {
 		// Update the view according to any events that have happened since
 		// the last time this method was called.
 		bool	Update(float);
+
+		// construct projection matrix by this function
+		Matrix4& construct_perspective_projection_matrix(float fov_angle, float aspect, float z_near, float z_far);
+
+		// construct modelview matrix by this function
+		Matrix4& construct_modelview_matrix(Vector3 eye_pos, Vector3 target_vec, Vector3 up_dir);
 
 	private:
 		bool	Drag(float);	// The function to call for mouse drag events
