@@ -21,6 +21,7 @@
 
 #include <FL/math.h> // Use FLTK's math header because it defines M_PI
 #include "Cell.h"
+#include "Matrices.h"
 
 //************************************************************************
 //
@@ -96,7 +97,7 @@ class Maze {
 
 		// Draws the first-person view of the maze. It is passed the focal distance.
 		// THIS IS THE FUINCTION YOU SHOULD MODIFY.
-		void	Draw_View(const float);
+		void	Draw_View(const float, Matrix4 projection, Matrix4 modelview);
 
 		// Draws the Walls
 		void Draw_Wall(const float start[2], const float end[2], const float color[3]);
@@ -134,6 +135,9 @@ class Maze {
 		float	min_yp;	// The minimum y location of any vertex in the maze.
 		float	max_xp;	// The maximum x location of any vertex in the maze.
 		float	max_yp;	// The maximum y location of any vertex in the maze.
+
+		Matrix4 projection_matrix; // The local projection matrix
+		Matrix4 modelview_matrix; // The local modelview matrix
 
 	public:
 		static const char	X; // Used to index into the viewer's position

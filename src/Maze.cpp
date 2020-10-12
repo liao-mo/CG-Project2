@@ -629,7 +629,7 @@ Draw_Map(int min_x, int min_y, int max_x, int max_y)
 //   THIS IS THE FUINCTION YOU SHOULD MODIFY.
 //======================================================================
 void Maze::
-Draw_View(const float focal_dist)
+Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 //======================================================================
 {
 	frame_num++;
@@ -638,10 +638,12 @@ Draw_View(const float focal_dist)
 	// TODO
 	// The rest is up to you!
 	//###################################################################
+	projection_matrix = projection;
+	modelview_matrix = modelview;
 	
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 	for (int i = 0; i < (int)num_edges; ++i) {
 		float edge_start[2] = {
 			edges[i]->endpoints[Edge::START]->posn[Vertex::X],
@@ -666,14 +668,53 @@ Draw_View(const float focal_dist)
 
 //Draw the wall function
 void Maze::Draw_Wall(const float start[2], const float end[2], const float color[3]) {
-	float edge0[3] = { start[Y], 0.0f, start[X] };
-	float edge1[3] = { end[Y], 0.0f, end[X] };
+	//float edge0[3] = { start[Y], 0.0f, start[X] };
+	//float edge1[3] = { end[Y], 0.0f, end[X] };
+
+	//four vertices contstruct a wall
+	Vector4 edgeBegin1(start[Y], 1.0, start[X], 1);
+	Vector4 edgeEnd1(end[Y], 1.0, end[X], 1);
+	Vector4 edgeEnd2(end[Y], -1.0, end[X], 1);
+	Vector4 edgeBegin2(start[Y], -1.0, start[X], 1);
+
+	//mutiply the vertices by the modelview matrix
+	edgeBegin1 = modelview_matrix * edgeBegin1;
+	edgeEnd1 = modelview_matrix * edgeEnd1;
+	edgeEnd2 = modelview_matrix * edgeEnd2;
+	edgeBegin2 = modelview_matrix * edgeBegin2;
+
+	//mutiply the vertices by the projection matrix
+	edgeBegin1 = projection_matrix * edgeBegin1;
+	edgeEnd1 = projection_matrix * edgeEnd1;
+	edgeEnd2 = projection_matrix * edgeEnd2;
+	edgeBegin2 = projection_matrix * edgeBegin2;
+
+
 	glBegin(GL_POLYGON);
 	glColor3fv(color);
-	glVertex3f(edge0[X], 1.0f, edge0[Z]);
-	glVertex3f(edge1[X], 1.0f, edge1[Z]);
-	glVertex3f(edge1[X], -1.0f, edge1[Z]);
-	glVertex3f(edge0[X], -1.0f, edge0[Z]);
+	//glVertex3f(edge0[X], 1.0f, edge0[Z]);
+	//glVertex3f(edge1[X], 1.0f, edge1[Z]);
+	//glVertex3f(edge1[X], -1.0f, edge1[Z]);
+	//glVertex3f(edge0[X], -1.0f, edge0[Z]);
+
+	//x, y, z, w given
+	//glVertex4f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z, edgeBegin1.w);
+	//glVertex4f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z, edgeEnd1.w);
+	//glVertex4f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z, edgeEnd2.w);
+	//glVertex4f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z, edgeBegin2.w);
+
+	if (edgeBegin1.w < 0 && edgeEnd1.w < 0) return;
+	if (edgeEnd2.w < 0 && edgeBegin2.w < 0) return;
+	edgeBegin1 /= abs(edgeBegin1.w);
+	edgeEnd1 /= abs(edgeEnd1.w);
+	edgeEnd2 /= abs(edgeEnd2.w);
+	edgeBegin2 /= abs(edgeBegin2.w);
+
+	glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
+	glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
+	glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
+	glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
+
 	glEnd();
 }
 
