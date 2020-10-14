@@ -1,6 +1,6 @@
-^C:\USERS\PPPOO\DESKTOP\GITHUB PROJECTS\CG-PROJECT2\CMAKELISTS.TXT
+^C:\USERS\USER\DESKTOP\新增資料夾\CG-PROJECT2\CMAKELISTS.TXT
 setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/pppoo/Desktop/Github projects/CG-Project2" "-BC:/Users/pppoo/Desktop/Github projects/CG-Project2/build" --check-stamp-file "C:/Users/pppoo/Desktop/Github projects/CG-Project2/build/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/USER/Desktop/新增資料夾/CG-Project2 -BC:/Users/USER/Desktop/新增資料夾/CG-Project2/build --check-stamp-file C:/Users/USER/Desktop/新增資料夾/CG-Project2/build/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

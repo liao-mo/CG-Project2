@@ -26,6 +26,9 @@
 #include <FL/fl_draw.h>
 #include <Fl/gl.h>
 #include <GL/glu.h>
+#include <iostream>
+
+using namespace std;
 
 const char Maze::X = 0;
 const char Maze::Y = 1;
@@ -643,7 +646,8 @@ Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 	
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
+	system("cls");
 	for (int i = 0; i < (int)num_edges; ++i) {
 		float edge_start[2] = {
 			edges[i]->endpoints[Edge::START]->posn[Vertex::X],
@@ -683,11 +687,25 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	edgeEnd2 = modelview_matrix * edgeEnd2;
 	edgeBegin2 = modelview_matrix * edgeBegin2;
 
+	cout << edgeBegin1 << endl;
+	cout << edgeEnd1 << endl;
+	cout << endl;
+	cout << endl;
+
+	
+
+	//if (edgeBegin1.z < 0 || edgeEnd1.z < 0) return;
+
 	//mutiply the vertices by the projection matrix
 	edgeBegin1 = projection_matrix * edgeBegin1;
 	edgeEnd1 = projection_matrix * edgeEnd1;
 	edgeEnd2 = projection_matrix * edgeEnd2;
 	edgeBegin2 = projection_matrix * edgeBegin2;
+
+	cout << edgeBegin1 << endl;
+	cout << edgeEnd1 << endl;
+	cout << endl;
+	if (edgeBegin1.w < 0 || edgeEnd1.w < 0) return;
 
 
 	glBegin(GL_POLYGON);
@@ -703,17 +721,23 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	//glVertex4f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z, edgeEnd2.w);
 	//glVertex4f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z, edgeBegin2.w);
 
-	if (edgeBegin1.w < 0 && edgeEnd1.w < 0) return;
-	if (edgeEnd2.w < 0 && edgeBegin2.w < 0) return;
-	edgeBegin1 /= abs(edgeBegin1.w);
-	edgeEnd1 /= abs(edgeEnd1.w);
-	edgeEnd2 /= abs(edgeEnd2.w);
-	edgeBegin2 /= abs(edgeBegin2.w);
+	edgeBegin1 /= edgeBegin1.w;
+	edgeEnd1 /= edgeEnd1.w;
+	edgeEnd2 /= edgeEnd2.w;
+	edgeBegin2 /= edgeBegin2.w;
 
 	glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
 	glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
 	glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
 	glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
+
+	
+
+
+	//glVertex2f(edgeBegin1.x, edgeBegin1.y);
+	//glVertex2f(edgeEnd1.x, edgeEnd1.y);
+	//glVertex2f(edgeEnd2.x, edgeEnd2.y);
+	//glVertex2f(edgeBegin2.x, edgeBegin2.y);
 
 	glEnd();
 }
