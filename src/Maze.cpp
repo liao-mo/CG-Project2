@@ -725,18 +725,18 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	edgeEnd2 /= edgeEnd2.w;
 	edgeBegin2 /= edgeBegin2.w;
 
-	glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
-	glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
-	glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
-	glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
+	//glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
+	//glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
+	//glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
+	//glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
 
 	
 
 
-	//glVertex2f(edgeBegin1.x, edgeBegin1.y);
-	//glVertex2f(edgeEnd1.x, edgeEnd1.y);
-	//glVertex2f(edgeEnd2.x, edgeEnd2.y);
-	//glVertex2f(edgeBegin2.x, edgeBegin2.y);
+	glVertex2f(edgeBegin1.x, edgeBegin1.y);
+	glVertex2f(edgeEnd1.x, edgeEnd1.y);
+	glVertex2f(edgeEnd2.x, edgeEnd2.y);
+	glVertex2f(edgeBegin2.x, edgeBegin2.y);
 
 	glEnd();
 }
@@ -953,7 +953,7 @@ void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, 
 	// Case 1 : When both points are inside 
 	if (i_pos < 0 && k_pos < 0)
 	{
-		cout << "case1" << endl;
+		//cout << "case1" << endl;
 		//both points are added
 		new_points[new_poly_size][0] = ix;
 		new_points[new_poly_size][1] = iy;
@@ -967,7 +967,7 @@ void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, 
 	// Case 2: When only first point is outside 
 	else if (i_pos >= 0 && k_pos < 0)
 	{
-		cout << "case2" << endl;
+		//cout << "case2" << endl;
 		// Point of intersection with edge 
 		// and the second point is added 
 		new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
@@ -982,17 +982,21 @@ void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, 
 	// Case 3: When only second point is outside 
 	else if (i_pos < 0 && k_pos >= 0)
 	{
-		cout << "case3" << endl;
-		//Only point of intersection with edge is added 
+		//cout << "case3" << endl;
+		//both points are added
 		new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
 		new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+		new_poly_size++;
+
+		new_points[new_poly_size][0] = ix;
+		new_points[new_poly_size][1] = iy;
 		new_poly_size++;
 	}
 
 	//// Case 4: When both points are outside 
 	else
 	{
-		cout << "case4" << endl;
+		//cout << "case4" << endl;
 		//No points are added 
 	}
 //}
@@ -1050,12 +1054,20 @@ vector<Edge> Maze::clip_edges() {
 		//clip line1
 		int point_size = 2;
 		clip(end_points, point_size, line1[0], line1[1], line1[2], line1[3]);
-		//clip line2
+		////clip line2
 		if (point_size == 2) {
-			//clip(end_points, point_size, line2[0], line2[1], line2[2], line2[3]);
+			clip(end_points, point_size, line2[0], line2[1], line2[2], line2[3]);
+		}
+		//else {
+		//	cout << i << "  outside!" << endl;
+		//}
+
+		if (point_size != 2) {
+			continue;
 		}
 
-		cout << endl;
+
+		//cout << endl;
 
 		float color[3] = {
 			edges[i]->color[0],
@@ -1066,6 +1078,9 @@ vector<Edge> Maze::clip_edges() {
 		Vertex* temp_v1 = new Vertex (i * 2 + 0, end_points[0][X], end_points[0][Y]);
 		Vertex* temp_v2 = new Vertex (i * 2 + 1, end_points[1][X], end_points[1][Y]);
 		Edge temp_edge(i, temp_v1, temp_v2, color[0], color[1], color[2]);
+		temp_edge.opaque = edges[i]->opaque;
+		temp_edge.neighbors[0] = edges[i]->neighbors[0];
+		temp_edge.neighbors[1] = edges[i]->neighbors[1];
 		output_edges.push_back(temp_edge);
 	}
 

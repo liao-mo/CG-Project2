@@ -91,7 +91,7 @@ static void Load_Callback(Fl_Widget *widget, void *data)
 	const char	*filename;
 	Maze	*new_maze;
 
-	filename = fl_input("Enter the filename:", "Sources/maze-10x10-50");
+	filename = fl_input("Enter the filename:", "Sources/maze-1x1-45");
 
 	if ( ! filename )
 		return;
