@@ -704,7 +704,7 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	//cout << edgeBegin1 << endl;
 	//cout << edgeEnd1 << endl;
 	//cout << endl;
-	if (edgeBegin1.w < 0 || edgeEnd1.w < 0) return;
+	//if (edgeBegin1.w < 0 || edgeEnd1.w < 0) return;
 
 
 	glBegin(GL_POLYGON);
@@ -725,18 +725,18 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	edgeEnd2 /= edgeEnd2.w;
 	edgeBegin2 /= edgeBegin2.w;
 
-	//glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
-	//glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
-	//glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
-	//glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
+	glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
+	glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
+	glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
+	glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
 
 	
 
 
-	glVertex2f(edgeBegin1.x, edgeBegin1.y);
-	glVertex2f(edgeEnd1.x, edgeEnd1.y);
-	glVertex2f(edgeEnd2.x, edgeEnd2.y);
-	glVertex2f(edgeBegin2.x, edgeBegin2.y);
+	//glVertex2f(edgeBegin1.x, edgeBegin1.y);
+	//glVertex2f(edgeEnd1.x, edgeEnd1.y);
+	//glVertex2f(edgeEnd2.x, edgeEnd2.y);
+	//glVertex2f(edgeBegin2.x, edgeBegin2.y);
 
 	glEnd();
 }
@@ -935,63 +935,68 @@ void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, 
 	float new_points[2][2];
 	int new_poly_size = 0;
 
-	// (ix,iy),(kx,ky) are the coordinate values of the points 
-	for (int i = 0; i < poly_size; i++)
-	{
+	//(ix,iy),(kx,ky) are the coordinate values of the points 
+	//for (int i = 0; i < poly_size; i++)
+	//{
 		// i and k form a line in polygon 
-		int k = (i + 1) % poly_size;
-		float ix = poly_points[i][0], iy = poly_points[i][1];
-		float kx = poly_points[k][0], ky = poly_points[k][1];
+	int i = 0;
+	int k = (i + 1);
+	float ix = poly_points[i][0], iy = poly_points[i][1];
+	float kx = poly_points[k][0], ky = poly_points[k][1];
 
-		// Calculating position of first point 
-		// w.r.t. clipper line 
-		float i_pos = (x2 - x1) * (iy - y1) - (y2 - y1) * (ix - x1);
+	// Calculating position of first point 
+	// w.r.t. clipper line 
+	float i_pos = (x2 - x1) * (iy - y1) - (y2 - y1) * (ix - x1);
 
-		// Calculating position of second point 
-		// w.r.t. clipper line 
-		float k_pos = (x2 - x1) * (ky - y1) - (y2 - y1) * (kx - x1);
+	// Calculating position of second point 
+	// w.r.t. clipper line 
+	float k_pos = (x2 - x1) * (ky - y1) - (y2 - y1) * (kx - x1);
 
-		// Case 1 : When both points are inside 
-		if (i_pos < 0 && k_pos < 0)
-		{
-			//Only second point is added 
-			new_points[new_poly_size][0] = kx;
-			new_points[new_poly_size][1] = ky;
-			new_poly_size++;
-		}
-
-		// Case 2: When only first point is outside 
-		else if (i_pos >= 0 && k_pos < 0)
-		{
-			// Point of intersection with edge 
-			// and the second point is added 
-			new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-			new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-			new_poly_size++;
-
-			new_points[new_poly_size][0] = kx;
-			new_points[new_poly_size][1] = ky;
-			new_poly_size++;
-		}
-
-		// Case 3: When only second point is outside 
-		else if (i_pos < 0 && k_pos >= 0)
-		{
-			//Only point of intersection with edge is added 
-			new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-			new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-			new_poly_size++;
-		}
-
-		// Case 4: When both points are outside 
-		else
-		{
-			//No points are added 
-		}
+	// Case 1 : When both points are inside 
+	if (i_pos < 0 && k_pos < 0)
+	{
+		cout << "case1" << endl;
+		//Only second point is added 
+		new_points[new_poly_size][0] = kx;
+		new_points[new_poly_size][1] = ky;
+		new_poly_size++;
 	}
 
-	// Copying new points into original array 
-	// and changing the no. of vertices 
+	// Case 2: When only first point is outside 
+	else if (i_pos >= 0 && k_pos < 0)
+	{
+		cout << "case2" << endl;
+		// Point of intersection with edge 
+		// and the second point is added 
+		new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+		new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+		new_poly_size++;
+
+		new_points[new_poly_size][0] = kx;
+		new_points[new_poly_size][1] = ky;
+		new_poly_size++;
+	}
+
+	// Case 3: When only second point is outside 
+	else if (i_pos < 0 && k_pos >= 0)
+	{
+		cout << "case3" << endl;
+		//Only point of intersection with edge is added 
+		new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+		new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+		new_poly_size++;
+	}
+
+	//// Case 4: When both points are outside 
+	else
+	{
+		cout << "case4" << endl;
+		//No points are added 
+	}
+//}
+
+// Copying new points into original array 
+// and changing the no. of vertices 
 	poly_size = new_poly_size;
 	for (int i = 0; i < poly_size; i++)
 	{
@@ -1033,21 +1038,22 @@ vector<Edge> Maze::clip_edges() {
 
 	//iterate all the edges, and clip them to the output_edges
 	for (int i = 0; i < (int)num_edges; ++i) {
+		cout << "i: " << i << endl;
 		float x0, x1, y0, y1;
 		x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
 		x1 = edges[i]->endpoints[Edge::END]->posn[Vertex::X];
 		y0 = edges[i]->endpoints[Edge::START]->posn[Vertex::Y];
 		y1 = edges[i]->endpoints[Edge::END]->posn[Vertex::Y];
 		float end_points[2][2] = { {x0,y0},{x1,y1} };
-
 		//clip line1
 		int point_size = 2;
 		clip(end_points, point_size, line1[0], line1[1], line1[2], line1[3]);
 		//clip line2
 		if (point_size == 2) {
-			clip(end_points, point_size, line2[0], line2[1], line2[2], line2[3]);
+			//clip(end_points, point_size, line2[0], line2[1], line2[2], line2[3]);
 		}
 
+		cout << endl;
 
 
 
@@ -1061,7 +1067,10 @@ vector<Edge> Maze::clip_edges() {
 			edges[i]->color[2]
 		};
 
-
+		Vertex* temp_v1 = new Vertex (i * 2 + 0, end_points[0][X], end_points[0][Y]);
+		Vertex* temp_v2 = new Vertex (i * 2 + 1, end_points[1][X], end_points[1][Y]);
+		Edge temp_edge(i, temp_v1, temp_v2, color[0], color[1], color[2]);
+		output_edges.push_back(temp_edge);
 	}
 
 	return output_edges;
