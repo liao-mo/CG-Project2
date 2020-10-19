@@ -283,10 +283,14 @@ Build_Connectivity(const int num_x, const int num_y,
 		for ( j = 0 ; j < num_x ; j++ ) {
 			int vs = row + j;
 			int ve = row + j + 1;
-			edges[k] = new Edge(k, vertices[vs], vertices[ve],
-			rand() / (float)RAND_MAX * 0.5f + 0.25f,
-			rand() / (float)RAND_MAX * 0.5f + 0.25f,
-			rand() / (float)RAND_MAX * 0.5f + 0.25f);
+			edges[k] = new Edge(
+				k, 
+				vertices[vs], 
+				vertices[ve],
+				rand() / (float)RAND_MAX * 0.5f + 0.25f,
+				rand() / (float)RAND_MAX * 0.5f + 0.25f,
+				rand() / (float)RAND_MAX * 0.5f + 0.25f
+			);
 			k++;
 		}
 	}
@@ -457,24 +461,22 @@ Set_Extents(void)
 //   that the point is "outside" (meaning that it might be inside the
 //   new cell).
 //======================================================================
-void Maze::
-Find_View_Cell(Cell *seed_cell)
+void Maze::Find_View_Cell(Cell* seed_cell)
 //======================================================================
 {
-	Cell    *new_cell;
+	Cell* new_cell;
 
 	// 
-	while ( ! ( seed_cell->Point_In_Cell(viewer_posn[X], viewer_posn[Y],
-													 viewer_posn[Z], new_cell) ) ) {
-		if ( new_cell == 0 ) {
+	while (!(seed_cell->Point_In_Cell(viewer_posn[X], viewer_posn[Y], viewer_posn[Z], new_cell))) {
+		if (new_cell == 0) {
 			// The viewer is outside the top or bottom of the maze.
 			throw new MazeException("Maze: View not in maze\n");
 		}
 
 		seed_cell = new_cell;
-    }
-    
-    view_cell = seed_cell;
+	}
+
+	view_cell = seed_cell;
 }
 
 
@@ -484,11 +486,10 @@ Find_View_Cell(Cell *seed_cell)
 //   between the viewer's location and the walls of the maze and prevent
 //   the viewer from passing through walls.
 //======================================================================
-void Maze::
-Move_View_Posn(const float dx, const float dy, const float dz)
+void Maze::Move_View_Posn(const float dx, const float dy, const float dz)
 //======================================================================
 {
-	Cell    *new_cell;
+	Cell* new_cell;
 	float   xs, ys, zs, xe, ye, ze;
 
 	// Move the viewer by the given amount. This does collision testing to
@@ -504,10 +505,8 @@ Move_View_Posn(const float dx, const float dy, const float dz)
 	ze = zs + dz;
 
 	// Fix the z to keep it in the maze.
-	if ( ze > 1.0f - BUFFER )
-		//ze = 1.0f - BUFFER;
-	if ( ze < BUFFER - 1.0f )
-		//ze = BUFFER - 1.0f;
+	if (ze > 1.0f - BUFFER) ze = 1.0f - BUFFER;
+	if (ze < BUFFER - 1.0f) ze = BUFFER - 1.0f;
 
 	// Clip_To_Cell clips the motion segment to the view_cell if the
 	// segment intersects an opaque edge. If the segment intersects
@@ -516,7 +515,7 @@ Move_View_Posn(const float dx, const float dy, const float dz)
 	// and it returns the cell the viewer is entering. We keep going
 	// until Clip_To_Cell returns NULL, meaning we've done as much of
 	// the motion as is possible without passing through walls.
-	while ( ( new_cell = view_cell->Clip_To_Cell(xs, ys, xe, ye, BUFFER) ) )
+	while ((new_cell = view_cell->Clip_To_Cell(xs, ys, xe, ye, BUFFER)))
 		view_cell = new_cell;
 
 	// The viewer is at the end of the motion segment, which may have
@@ -641,13 +640,17 @@ Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 	// TODO
 	// The rest is up to you!
 	//###################################################################
+	
+	vector<Edge> edges_in_view = clip_edges();
+
+
 	projection_matrix = projection;
 	modelview_matrix = modelview;
 	
-	glClear(GL_DEPTH_BUFFER_BIT);
-	
-	glEnable(GL_DEPTH_TEST);
-	system("cls");
+
+	//Can't use these functions
+	//glClear(GL_DEPTH_BUFFER_BIT);
+	//glEnable(GL_DEPTH_TEST);
 	for (int i = 0; i < (int)num_edges; ++i) {
 		float edge_start[2] = {
 			edges[i]->endpoints[Edge::START]->posn[Vertex::X],
@@ -687,14 +690,10 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	edgeEnd2 = modelview_matrix * edgeEnd2;
 	edgeBegin2 = modelview_matrix * edgeBegin2;
 
-	cout << edgeBegin1 << endl;
-	cout << edgeEnd1 << endl;
-	cout << endl;
-	cout << endl;
-
-	
-
-	//if (edgeBegin1.z < 0 || edgeEnd1.z < 0) return;
+	//cout << edgeBegin1 << endl;
+	//cout << edgeEnd1 << endl;
+	//cout << endl;
+	//cout << endl;
 
 	//mutiply the vertices by the projection matrix
 	edgeBegin1 = projection_matrix * edgeBegin1;
@@ -702,9 +701,9 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	edgeEnd2 = projection_matrix * edgeEnd2;
 	edgeBegin2 = projection_matrix * edgeBegin2;
 
-	cout << edgeBegin1 << endl;
-	cout << edgeEnd1 << endl;
-	cout << endl;
+	//cout << edgeBegin1 << endl;
+	//cout << edgeEnd1 << endl;
+	//cout << endl;
 	if (edgeBegin1.w < 0 || edgeEnd1.w < 0) return;
 
 
@@ -726,18 +725,18 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	edgeEnd2 /= edgeEnd2.w;
 	edgeBegin2 /= edgeBegin2.w;
 
-	glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
-	glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
-	glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
-	glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
+	//glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
+	//glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
+	//glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
+	//glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
 
 	
 
 
-	//glVertex2f(edgeBegin1.x, edgeBegin1.y);
-	//glVertex2f(edgeEnd1.x, edgeEnd1.y);
-	//glVertex2f(edgeEnd2.x, edgeEnd2.y);
-	//glVertex2f(edgeBegin2.x, edgeBegin2.y);
+	glVertex2f(edgeBegin1.x, edgeBegin1.y);
+	glVertex2f(edgeEnd1.x, edgeEnd1.y);
+	glVertex2f(edgeEnd2.x, edgeEnd2.y);
+	glVertex2f(edgeBegin2.x, edgeBegin2.y);
 
 	glEnd();
 }
@@ -757,33 +756,34 @@ Draw_Frustum(int min_x, int min_y, int max_x, int max_y)
 
 	// Draws the view frustum in the map. Sets up all the same viewing
 	// parameters as draw().
-	scale_x	= ( max_x - min_x - 10 ) / ( max_xp - min_xp );
-	scale_y	= ( max_y - min_y - 10 ) / ( max_yp - min_yp );
-	scale		= scale_x > scale_y ? scale_y : scale_x;
-	height	= (int)ceil(scale * ( max_yp - min_yp ));
+	scale_x = (max_x - min_x - 10) / (max_xp - min_xp);
+	scale_y = (max_y - min_y - 10) / (max_yp - min_yp);
+	scale = scale_x > scale_y ? scale_y : scale_x;
+	height = (int)ceil(scale * (max_yp - min_yp));
 
 	min_x += 5;
 	min_y += 5;
 
-	view_x = ( viewer_posn[X] - min_xp ) * scale;
-	view_y = ( viewer_posn[Y] - min_yp ) * scale;
-	fl_line(min_x + (int)floor(view_x + 
-			  cos(To_Radians(viewer_dir+viewer_fov / 2.0)) * scale),
-			  min_y + height- 
-			  (int)floor(view_y + 
-							 sin(To_Radians(viewer_dir+viewer_fov / 2.0)) * 
-							 scale),
-				min_x + (int)floor(view_x),
-				min_y + height - (int)floor(view_y));
-	fl_line(min_x + (int)floor(view_x + 
-										cos(To_Radians(viewer_dir-viewer_fov / 2.0))	* 
-										scale),
-				min_y + height- 
-				(int)floor(view_y + sin(To_Radians(viewer_dir-viewer_fov / 2.0)) *
-				scale),
-				min_x + (int)floor(view_x),
-				min_y + height - (int)floor(view_y));
-	}
+	view_x = (viewer_posn[X] - min_xp) * scale;
+	view_y = (viewer_posn[Y] - min_yp) * scale;
+
+	fl_line(
+		min_x + (int)(view_x + cos(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale),
+		min_y + height - (int)(view_y + sin(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale),
+		min_x + (int)(view_x),
+		min_y + height - (int)(view_y));
+	//system("cls");
+	//cout << "x0: " << min_x + (int)floor(view_x + cos(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale) << endl;
+	//cout << "x1: " << min_y + height - (int)floor(view_y + sin(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale) << endl;
+	//cout << "y0: " << min_x + (int)floor(view_x) << endl;
+	//cout << "y0: " << min_y + height - (int)floor(view_y) << endl;
+	//cout << endl;
+	fl_line(
+		min_x + (int)(view_x + cos(To_Radians(viewer_dir - viewer_fov / 2.0)) * scale),
+		min_y + height - (int)(view_y + sin(To_Radians(viewer_dir - viewer_fov / 2.0)) * scale),
+		min_x + (int)(view_x),
+		min_y + height - (int)(view_y));
+}
 
 
 //**********************************************************************
@@ -914,4 +914,155 @@ Save(const char *filename)
 	fclose(f);
 
 	return true;
+}
+
+
+//clipping functions
+float x_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
+	float num = (x1 * y2 - y1 * x2) * (x3 - x4) -
+		(x1 - x2) * (x3 * y4 - y3 * x4);
+	float den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+	return num / den;
+}
+float y_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
+	float num = (x1 * y2 - y1 * x2) * (y3 - y4) -
+		(y1 - y2) * (x3 * y4 - y3 * x4);
+	float den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+	return num / den;
+}
+
+void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, float y2) {
+	float new_points[2][2];
+	int new_poly_size = 0;
+
+	// (ix,iy),(kx,ky) are the coordinate values of the points 
+	for (int i = 0; i < poly_size; i++)
+	{
+		// i and k form a line in polygon 
+		int k = (i + 1) % poly_size;
+		float ix = poly_points[i][0], iy = poly_points[i][1];
+		float kx = poly_points[k][0], ky = poly_points[k][1];
+
+		// Calculating position of first point 
+		// w.r.t. clipper line 
+		float i_pos = (x2 - x1) * (iy - y1) - (y2 - y1) * (ix - x1);
+
+		// Calculating position of second point 
+		// w.r.t. clipper line 
+		float k_pos = (x2 - x1) * (ky - y1) - (y2 - y1) * (kx - x1);
+
+		// Case 1 : When both points are inside 
+		if (i_pos < 0 && k_pos < 0)
+		{
+			//Only second point is added 
+			new_points[new_poly_size][0] = kx;
+			new_points[new_poly_size][1] = ky;
+			new_poly_size++;
+		}
+
+		// Case 2: When only first point is outside 
+		else if (i_pos >= 0 && k_pos < 0)
+		{
+			// Point of intersection with edge 
+			// and the second point is added 
+			new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+			new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+			new_poly_size++;
+
+			new_points[new_poly_size][0] = kx;
+			new_points[new_poly_size][1] = ky;
+			new_poly_size++;
+		}
+
+		// Case 3: When only second point is outside 
+		else if (i_pos < 0 && k_pos >= 0)
+		{
+			//Only point of intersection with edge is added 
+			new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+			new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
+			new_poly_size++;
+		}
+
+		// Case 4: When both points are outside 
+		else
+		{
+			//No points are added 
+		}
+	}
+
+	// Copying new points into original array 
+	// and changing the no. of vertices 
+	poly_size = new_poly_size;
+	for (int i = 0; i < poly_size; i++)
+	{
+		poly_points[i][0] = new_points[i][0];
+		poly_points[i][1] = new_points[i][1];
+	}
+}
+
+vector<Edge> Maze::clip_edges() {
+	vector<Edge> output_edges;
+
+	//clip plane is formed by these two lines
+	//µøÀ@½u (in x-right, y-up coordinate)
+	//line1:composed by 
+	//	x1:(view_x)
+	//	x2:(view_x + cos(To_Radians(viewer_dir + viewer_fov / 2.0)))
+	//	y1:(view_y))
+	//	y2:(view_y + sin(To_Radians(viewer_dir + viewer_fov / 2.0)))
+	//line2:composed by
+	//	x1:(view_x)
+	//	x2:(view_x + cos(To_Radians(viewer_dir - viewer_fov / 2.0)))
+	//	y1:(view_y))
+	//	y2:(view_y + sin(To_Radians(viewer_dir - viewer_fov / 2.0)))
+
+	//line1
+	vector<float> line1(4, 0);//(x1,y1,x2,y2)
+	line1[0] = viewer_posn[X];
+	line1[1] = viewer_posn[Y];
+	line1[2] = viewer_posn[X] + cos(To_Radians(viewer_dir + viewer_fov / 2));
+	line1[3] = viewer_posn[Y] + sin(To_Radians(viewer_dir + viewer_fov / 2));
+	//line2
+	vector<float> line2(4, 0);//(x1,y1,x2,y2)
+	line2[0] = viewer_posn[X] + cos(To_Radians(viewer_dir - viewer_fov / 2));
+	line2[1] = viewer_posn[Y] + sin(To_Radians(viewer_dir - viewer_fov / 2));
+	line2[2] = viewer_posn[X];
+	line2[3] = viewer_posn[Y];
+
+
+
+	//iterate all the edges, and clip them to the output_edges
+	for (int i = 0; i < (int)num_edges; ++i) {
+		float x0, x1, y0, y1;
+		x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
+		x1 = edges[i]->endpoints[Edge::END]->posn[Vertex::X];
+		y0 = edges[i]->endpoints[Edge::START]->posn[Vertex::Y];
+		y1 = edges[i]->endpoints[Edge::END]->posn[Vertex::Y];
+		float end_points[2][2] = { {x0,y0},{x1,y1} };
+
+		//clip line1
+		int point_size = 2;
+		clip(end_points, point_size, line1[0], line1[1], line1[2], line1[3]);
+		//clip line2
+		if (point_size == 2) {
+			clip(end_points, point_size, line2[0], line2[1], line2[2], line2[3]);
+		}
+
+
+
+
+
+
+
+
+		float color[3] = {
+			edges[i]->color[0],
+			edges[i]->color[1],
+			edges[i]->color[2]
+		};
+
+
+	}
+
+	return output_edges;
 }

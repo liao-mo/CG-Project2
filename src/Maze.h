@@ -20,6 +20,7 @@
 #define _MAZE_H_
 
 #include <FL/math.h> // Use FLTK's math header because it defines M_PI
+#include <vector>
 #include "Cell.h"
 #include "Matrices.h"
 
@@ -119,6 +120,9 @@ class Maze {
 		void    Build_Maze(void);
 		void    Set_Extents(void);
 		void    Find_View_Cell(Cell*);
+
+		//clip all edges to my view frustum, and output the edges in view
+		std::vector<Edge> clip_edges();
 
 	private:
 		Cell				*view_cell;// The cell that currently contains the view
