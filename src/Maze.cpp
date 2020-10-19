@@ -651,22 +651,22 @@ Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 	//Can't use these functions
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//glEnable(GL_DEPTH_TEST);
-	for (int i = 0; i < (int)num_edges; ++i) {
+	for (int i = 0; i < edges_in_view.size(); ++i) {
 		float edge_start[2] = {
-			edges[i]->endpoints[Edge::START]->posn[Vertex::X],
-			edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
+			edges_in_view[i].endpoints[Edge::START]->posn[Vertex::X],
+			edges_in_view[i].endpoints[Edge::START]->posn[Vertex::Y]
 		};
 		float edge_end[2] = {
-			edges[i]->endpoints[Edge::END]->posn[Vertex::X],
-			edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
+			edges_in_view[i].endpoints[Edge::END]->posn[Vertex::X],
+			edges_in_view[i].endpoints[Edge::END]->posn[Vertex::Y]
 		};
 		float color[3] = {
-			edges[i]->color[0],
-			edges[i]->color[1],
-			edges[i]->color[2]
+			edges_in_view[i].color[0],
+			edges_in_view[i].color[1],
+			edges_in_view[i].color[2]
 		};
 
-		if (edges[i]->opaque) {
+		if (edges_in_view[i].opaque) {
 			Draw_Wall(edge_start, edge_end, color);
 		}
 	}
@@ -936,11 +936,9 @@ void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, 
 	int new_poly_size = 0;
 
 	//(ix,iy),(kx,ky) are the coordinate values of the points 
-	//for (int i = 0; i < poly_size; i++)
-	//{
-		// i and k form a line in polygon 
+	// i and k form a line in polygon 
 	int i = 0;
-	int k = (i + 1);
+	int k = 1;
 	float ix = poly_points[i][0], iy = poly_points[i][1];
 	float kx = poly_points[k][0], ky = poly_points[k][1];
 
@@ -956,7 +954,11 @@ void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, 
 	if (i_pos < 0 && k_pos < 0)
 	{
 		cout << "case1" << endl;
-		//Only second point is added 
+		//both points are added
+		new_points[new_poly_size][0] = ix;
+		new_points[new_poly_size][1] = iy;
+		new_poly_size++;
+
 		new_points[new_poly_size][0] = kx;
 		new_points[new_poly_size][1] = ky;
 		new_poly_size++;
@@ -1038,7 +1040,7 @@ vector<Edge> Maze::clip_edges() {
 
 	//iterate all the edges, and clip them to the output_edges
 	for (int i = 0; i < (int)num_edges; ++i) {
-		cout << "i: " << i << endl;
+		//cout << "i: " << i << endl;
 		float x0, x1, y0, y1;
 		x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
 		x1 = edges[i]->endpoints[Edge::END]->posn[Vertex::X];
@@ -1054,12 +1056,6 @@ vector<Edge> Maze::clip_edges() {
 		}
 
 		cout << endl;
-
-
-
-
-
-
 
 		float color[3] = {
 			edges[i]->color[0],
