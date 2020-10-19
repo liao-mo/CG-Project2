@@ -23,6 +23,7 @@
 #include <vector>
 #include "Cell.h"
 #include "Matrices.h"
+#include "Vectors.h"
 
 //************************************************************************
 //
@@ -101,7 +102,7 @@ class Maze {
 		void	Draw_View(const float, Matrix4 projection, Matrix4 modelview);
 
 		// Draws the Walls
-		void Draw_Wall(const float start[2], const float end[2], const float color[3]);
+		void Draw_Wall(const std::vector<Vector4>, const float color[3]);
 
 		// Save the maze to a file of the given name.
 		bool	Save(const char*);
@@ -122,7 +123,7 @@ class Maze {
 		void    Find_View_Cell(Cell*);
 
 		//clip all edges to my view frustum, and output the edges in view
-		std::vector<Edge> clip_edges();
+		std::vector<std::vector<Vector4>> clip_edges();
 
 	private:
 		Cell				*view_cell;// The cell that currently contains the view

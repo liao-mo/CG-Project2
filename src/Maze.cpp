@@ -27,6 +27,7 @@
 #include <Fl/gl.h>
 #include <GL/glu.h>
 #include <iostream>
+#include "LineSeg.h"
 
 using namespace std;
 
@@ -641,7 +642,9 @@ Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 	// The rest is up to you!
 	//###################################################################
 	
-	vector<Edge> edges_in_view = clip_edges();
+
+	vector<vector<Vector4>> edgePoints_in_view = clip_edges();
+	
 
 
 	projection_matrix = projection;
@@ -651,44 +654,35 @@ Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 	//Can't use these functions
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//glEnable(GL_DEPTH_TEST);
-	for (int i = 0; i < edges_in_view.size(); ++i) {
-		float edge_start[2] = {
-			edges_in_view[i].endpoints[Edge::START]->posn[Vertex::X],
-			edges_in_view[i].endpoints[Edge::START]->posn[Vertex::Y]
-		};
-		float edge_end[2] = {
-			edges_in_view[i].endpoints[Edge::END]->posn[Vertex::X],
-			edges_in_view[i].endpoints[Edge::END]->posn[Vertex::Y]
-		};
+	for (int i = 0; i < edgePoints_in_view.size(); ++i) {
+
 		float color[3] = {
-			edges_in_view[i].color[0],
-			edges_in_view[i].color[1],
-			edges_in_view[i].color[2]
+			edges[i]->color[0],
+			edges[i]->color[1],
+			edges[i]->color[2]
 		};
 
-		if (edges_in_view[i].opaque) {
-			Draw_Wall(edge_start, edge_end, color);
+		if (edges[i]->opaque) {
+			Draw_Wall(edgePoints_in_view[i], color);
 		}
 	}
 
 }
 
 //Draw the wall function
-void Maze::Draw_Wall(const float start[2], const float end[2], const float color[3]) {
-	//float edge0[3] = { start[Y], 0.0f, start[X] };
-	//float edge1[3] = { end[Y], 0.0f, end[X] };
+void Maze::Draw_Wall(const std::vector<Vector4> vertices, const float color[3]) {
 
 	//four vertices contstruct a wall
-	Vector4 edgeBegin1(start[Y], 1.0, start[X], 1);
-	Vector4 edgeEnd1(end[Y], 1.0, end[X], 1);
-	Vector4 edgeEnd2(end[Y], -1.0, end[X], 1);
-	Vector4 edgeBegin2(start[Y], -1.0, start[X], 1);
+	Vector4 edgeBegin1 = vertices[0];
+	Vector4 edgeEnd1 = vertices[1];
+	Vector4 edgeEnd2 = vertices[2];
+	Vector4 edgeBegin2 = vertices[3];
 
-	//mutiply the vertices by the modelview matrix
-	edgeBegin1 = modelview_matrix * edgeBegin1;
-	edgeEnd1 = modelview_matrix * edgeEnd1;
-	edgeEnd2 = modelview_matrix * edgeEnd2;
-	edgeBegin2 = modelview_matrix * edgeBegin2;
+	////mutiply the vertices by the modelview matrix
+	//edgeBegin1 = modelview_matrix * edgeBegin1;
+	//edgeEnd1 = modelview_matrix * edgeEnd1;
+	//edgeEnd2 = modelview_matrix * edgeEnd2;
+	//edgeBegin2 = modelview_matrix * edgeBegin2;
 
 	//cout << edgeBegin1 << endl;
 	//cout << edgeEnd1 << endl;
@@ -709,21 +703,17 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 
 	glBegin(GL_POLYGON);
 	glColor3fv(color);
-	//glVertex3f(edge0[X], 1.0f, edge0[Z]);
-	//glVertex3f(edge1[X], 1.0f, edge1[Z]);
-	//glVertex3f(edge1[X], -1.0f, edge1[Z]);
-	//glVertex3f(edge0[X], -1.0f, edge0[Z]);
 
 	//x, y, z, w given
-	//glVertex4f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z, edgeBegin1.w);
-	//glVertex4f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z, edgeEnd1.w);
-	//glVertex4f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z, edgeEnd2.w);
-	//glVertex4f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z, edgeBegin2.w);
+	glVertex4f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z, edgeBegin1.w);
+	glVertex4f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z, edgeEnd1.w);
+	glVertex4f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z, edgeEnd2.w);
+	glVertex4f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z, edgeBegin2.w);
 
-	edgeBegin1 /= edgeBegin1.w;
-	edgeEnd1 /= edgeEnd1.w;
-	edgeEnd2 /= edgeEnd2.w;
-	edgeBegin2 /= edgeBegin2.w;
+	edgeBegin1 /= abs(edgeBegin1.w);
+	edgeEnd1 /= abs(edgeEnd1.w);
+	edgeEnd2 /= abs(edgeEnd2.w);
+	edgeBegin2 /= abs(edgeBegin2.w);
 
 	//glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
 	//glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
@@ -733,10 +723,10 @@ void Maze::Draw_Wall(const float start[2], const float end[2], const float color
 	
 
 
-	glVertex2f(edgeBegin1.x, edgeBegin1.y);
-	glVertex2f(edgeEnd1.x, edgeEnd1.y);
-	glVertex2f(edgeEnd2.x, edgeEnd2.y);
-	glVertex2f(edgeBegin2.x, edgeBegin2.y);
+	//glVertex2f(edgeBegin1.x, edgeBegin1.y);
+	//glVertex2f(edgeEnd1.x, edgeEnd1.y);
+	//glVertex2f(edgeEnd2.x, edgeEnd2.y);
+	//glVertex2f(edgeBegin2.x, edgeBegin2.y);
 
 	glEnd();
 }
@@ -916,173 +906,207 @@ Save(const char *filename)
 	return true;
 }
 
-
-//clipping functions
-float x_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
-	float num = (x1 * y2 - y1 * x2) * (x3 - x4) -
-		(x1 - x2) * (x3 * y4 - y3 * x4);
-	float den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-	return num / den;
-}
-float y_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
-	float num = (x1 * y2 - y1 * x2) * (y3 - y4) -
-		(y1 - y2) * (x3 * y4 - y3 * x4);
-	float den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-	return num / den;
-}
-
-void clip(float poly_points[][2], int& poly_size, float x1, float y1, float x2, float y2) {
-	float new_points[2][2];
-	int new_poly_size = 0;
+//clip an edge with a clip line
+void clip(Edge& edge, const LineSeg clip_line) {
 
 	//(ix,iy),(kx,ky) are the coordinate values of the points 
 	// i and k form a line in polygon 
-	int i = 0;
-	int k = 1;
-	float ix = poly_points[i][0], iy = poly_points[i][1];
-	float kx = poly_points[k][0], ky = poly_points[k][1];
+	//int i = 0;
+	//int k = 1;
+	//float ix = poly_points[i][0], iy = poly_points[i][1];
+	//float kx = poly_points[k][0], ky = poly_points[k][1];
 
-	// Calculating position of first point 
-	// w.r.t. clipper line 
-	float i_pos = (x2 - x1) * (iy - y1) - (y2 - y1) * (ix - x1);
+	LineSeg edgeLine(
+		edge.endpoints[Edge::START]->posn[Vertex::X],
+		edge.endpoints[Edge::START]->posn[Vertex::Y],
+		edge.endpoints[Edge::END]->posn[Vertex::X],
+		edge.endpoints[Edge::END]->posn[Vertex::Y]
+	);
+	float edge_x1 = edge.endpoints[Edge::START]->posn[Vertex::X];
+	float edge_y1 = edge.endpoints[Edge::START]->posn[Vertex::Y];
+	float edge_x2 = edge.endpoints[Edge::END]->posn[Vertex::X];
+	float edge_y2 = edge.endpoints[Edge::END]->posn[Vertex::Y];
 
-	// Calculating position of second point 
-	// w.r.t. clipper line 
-	float k_pos = (x2 - x1) * (ky - y1) - (y2 - y1) * (kx - x1);
+	float edge_vector[2] = {
+		edge.endpoints[Edge::END]->posn[Vertex::X] - edge.endpoints[Edge::START]->posn[Vertex::X],
+		edge.endpoints[Edge::END]->posn[Vertex::Y] - edge.endpoints[Edge::START]->posn[Vertex::X]
+	};
 
-	// Case 1 : When both points are inside 
-	if (i_pos < 0 && k_pos < 0)
-	{
-		//cout << "case1" << endl;
-		//both points are added
-		new_points[new_poly_size][0] = ix;
-		new_points[new_poly_size][1] = iy;
-		new_poly_size++;
+	Edge clip_edge(0,
+		new Vertex(0,clip_line.start[0], clip_line.start[1]), 
+		new Vertex(0, clip_line.end[0], clip_line.end[1]),
+		1.0, 1.0, 1.0);
 
-		new_points[new_poly_size][0] = kx;
-		new_points[new_poly_size][1] = ky;
-		new_poly_size++;
+	//對edge牆壁來說，與clip_line的cross_param > 1 或是 < 0，代表兩者沒有交點
+	float cross_param = edgeLine.Cross_Param(clip_line);
+	// Case 1 : edge and clip_line has intersection
+	if (cross_param > 0 && cross_param < 1) {
+		//intersectino point
+		Vertex newPoint(0, edgeLine.start[0] + edge_vector[0], edgeLine.start[1] + edge_vector[1]);
+
+		//如果edge start 在 clip line 的右邊(裡邊)，則存入new point & edge start
+		//否則存入 new point & edge end
+		if (clip_edge.Point_Side(edge_x1, edge_y1) == Edge::RIGHT) {
+			edge.endpoints[Edge::END]->posn[Vertex::X] = newPoint.posn[Vertex::X];
+			edge.endpoints[Edge::END]->posn[Vertex::Y] = newPoint.posn[Vertex::Y];
+		}
+		else {
+			edge.endpoints[Edge::START]->posn[Vertex::X] = newPoint.posn[Vertex::X];
+			edge.endpoints[Edge::START]->posn[Vertex::Y] = newPoint.posn[Vertex::Y];
+		}
 	}
 
-	// Case 2: When only first point is outside 
-	else if (i_pos >= 0 && k_pos < 0)
-	{
-		//cout << "case2" << endl;
-		// Point of intersection with edge 
-		// and the second point is added 
-		new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-		new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-		new_poly_size++;
-
-		new_points[new_poly_size][0] = kx;
-		new_points[new_poly_size][1] = ky;
-		new_poly_size++;
-	}
-
-	// Case 3: When only second point is outside 
-	else if (i_pos < 0 && k_pos >= 0)
-	{
-		//cout << "case3" << endl;
-		//both points are added
-		new_points[new_poly_size][0] = x_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-		new_points[new_poly_size][1] = y_intersect(x1, y1, x2, y2, ix, iy, kx, ky);
-		new_poly_size++;
-
-		new_points[new_poly_size][0] = ix;
-		new_points[new_poly_size][1] = iy;
-		new_poly_size++;
-	}
-
-	//// Case 4: When both points are outside 
-	else
-	{
-		//cout << "case4" << endl;
-		//No points are added 
-	}
-//}
-
-// Copying new points into original array 
-// and changing the no. of vertices 
-	poly_size = new_poly_size;
-	for (int i = 0; i < poly_size; i++)
-	{
-		poly_points[i][0] = new_points[i][0];
-		poly_points[i][1] = new_points[i][1];
+	// Case 2: edge and clip_line has no intersection
+	if (cross_param < 0 || cross_param > 1) {
+		//如果有一點 在 clip line 的右邊(裡邊)，則不更動edge的值
+		//否則將edge設為-1
+		if (clip_edge.Point_Side(edge_x1, edge_y1) == Edge::RIGHT) {
+			//don't need to modify
+		}
+		else {
+			edge.endpoints[Edge::START]->posn[Vertex::X] = -1;
+			edge.endpoints[Edge::START]->posn[Vertex::Y] = -1;
+			edge.endpoints[Edge::END]->posn[Vertex::X] = -1;
+			edge.endpoints[Edge::END]->posn[Vertex::Y] = -1;
+		}
 	}
 }
 
-vector<Edge> Maze::clip_edges() {
-	vector<Edge> output_edges;
+vector<vector<Vector4>> Maze::clip_edges() {
+	//construct output vertices
+	vector<vector<Vector4>> output_vertices;
 
-	//clip plane is formed by these two lines
-	//視錐線 (in x-right, y-up coordinate)
-	//line1:composed by 
-	//	x1:(view_x)
-	//	x2:(view_x + cos(To_Radians(viewer_dir + viewer_fov / 2.0)))
-	//	y1:(view_y))
-	//	y2:(view_y + sin(To_Radians(viewer_dir + viewer_fov / 2.0)))
-	//line2:composed by
-	//	x1:(view_x)
-	//	x2:(view_x + cos(To_Radians(viewer_dir - viewer_fov / 2.0)))
-	//	y1:(view_y))
-	//	y2:(view_y + sin(To_Radians(viewer_dir - viewer_fov / 2.0)))
 
-	//line1
-	vector<float> line1(4, 0);//(x1,y1,x2,y2)
-	line1[0] = viewer_posn[X];
-	line1[1] = viewer_posn[Y];
-	line1[2] = viewer_posn[X] + cos(To_Radians(viewer_dir + viewer_fov / 2));
-	line1[3] = viewer_posn[Y] + sin(To_Radians(viewer_dir + viewer_fov / 2));
-	//line2
-	vector<float> line2(4, 0);//(x1,y1,x2,y2)
-	line2[0] = viewer_posn[X] + cos(To_Radians(viewer_dir - viewer_fov / 2));
-	line2[1] = viewer_posn[Y] + sin(To_Radians(viewer_dir - viewer_fov / 2));
-	line2[2] = viewer_posn[X];
-	line2[3] = viewer_posn[Y];
+	//clip plane is formed by these four lines
+	//視錐線 (in x-right, y-forward coordinate)
+	//line1, near
+	LineSeg line1(
+		0.01 * tan(To_Radians(-viewer_fov / 2.0)),
+		0.01,
+		0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		0.01
+	);
+	//line2 left
+	LineSeg line2(
+		0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		0.01,
+		200 * tan(To_Radians(viewer_fov / 2.0)),
+		200
+	);
+	//line3 far
+	LineSeg line3(
+		200 * tan(To_Radians(viewer_fov / 2.0)),
+		200,
+		200 * tan(To_Radians(-viewer_fov / 2.0)),
+		200
+	);
+	//line4 right
+	LineSeg line4(
+		200 * tan(To_Radians(-viewer_fov / 2.0)),
+		200,
+		0.01 * tan(To_Radians(-viewer_fov / 2.0)),
+		0.01
+	);
 
+	vector<LineSeg> clip_lines = { line1,line2,line3,line4 };
+
+	LineSeg testLine1(0,1,2,1);
+	//LineSeg testLine2(-2,0,-2,3);
+	//cout << "crossPraram: " << testLine1.Cross_Param(testLine2) << endl;
+	Edge clip_edge(0,
+		new Vertex(0, testLine1.start[0], testLine1.start[1]),
+		new Vertex(0, testLine1.end[0], testLine1.end[1]),
+		1.0, 1.0, 1.0);
+	//cout << "point side: " << (int)clip_edge.Point_Side(1, -1) << endl;
 
 
 	//iterate all the edges, and clip them to the output_edges
 	for (int i = 0; i < (int)num_edges; ++i) {
 		//cout << "i: " << i << endl;
-		float x0, x1, y0, y1;
-		x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
-		x1 = edges[i]->endpoints[Edge::END]->posn[Vertex::X];
-		y0 = edges[i]->endpoints[Edge::START]->posn[Vertex::Y];
-		y1 = edges[i]->endpoints[Edge::END]->posn[Vertex::Y];
-		float end_points[2][2] = { {x0,y0},{x1,y1} };
-		//clip line1
-		int point_size = 2;
-		clip(end_points, point_size, line1[0], line1[1], line1[2], line1[3]);
-		////clip line2
-		if (point_size == 2) {
-			clip(end_points, point_size, line2[0], line2[1], line2[2], line2[3]);
-		}
-		//else {
-		//	cout << i << "  outside!" << endl;
-		//}
 
-		if (point_size != 2) {
-			continue;
-		}
+		//initialize vertices
+		float edge_start[2] = {
+			edges[i]->endpoints[Edge::START]->posn[Vertex::X],
+			edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
+		};
+		float edge_end[2] = {
+			edges[i]->endpoints[Edge::END]->posn[Vertex::X],
+			edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
+		};
+		Vector4 edgeBegin1(edge_start[Y], 1.0, edge_start[X], 1);
+		Vector4 edgeEnd1(edge_end[Y], 1.0, edge_end[X], 1);
+		Vector4 edgeEnd2(edge_end[Y], -1.0, edge_end[X], 1);
+		Vector4 edgeBegin2(edge_start[Y], -1.0, edge_start[X], 1);
 
+		//mutiply the vertices by the modelview matrix
+		edgeBegin1 = modelview_matrix * edgeBegin1;
+		edgeEnd1 = modelview_matrix * edgeEnd1;
+		edgeEnd2 = modelview_matrix * edgeEnd2;
+		edgeBegin2 = modelview_matrix * edgeBegin2;
 
-		//cout << endl;
+		//after mutiply the modelview matrix, these points are in this format
+		//edgestart(x, y)=>(y, height, x, w) vector4(x, y, z, w), the z is negative the the point is in front of camera
 
-		float color[3] = {
+		cout << i << endl;
+		cout << edgeBegin1 << endl;
+		cout << edgeEnd1 << endl;
+		cout << endl;
+		cout << endl;
+		
+
+		//可能需要解構，看起來vertex沒有釋放
+		Edge current_edge(
+			i,
+			new Vertex(0, edgeBegin1.z, edgeBegin1.x),
+			new Vertex(0, edgeEnd1.z, edgeEnd1.x),
 			edges[i]->color[0],
 			edges[i]->color[1],
 			edges[i]->color[2]
-		};
+		);
 
-		Vertex* temp_v1 = new Vertex (i * 2 + 0, end_points[0][X], end_points[0][Y]);
-		Vertex* temp_v2 = new Vertex (i * 2 + 1, end_points[1][X], end_points[1][Y]);
-		Edge temp_edge(i, temp_v1, temp_v2, color[0], color[1], color[2]);
-		temp_edge.opaque = edges[i]->opaque;
-		temp_edge.neighbors[0] = edges[i]->neighbors[0];
-		temp_edge.neighbors[1] = edges[i]->neighbors[1];
-		output_edges.push_back(temp_edge);
+		//clip(current_edge, clip_lines[0]);
+		//for (int j = 0; j < clip_lines.size(); ++j) {
+		//	clip(current_edge, clip_lines[j]);
+		//	//outside of the clip plane
+		//	if (current_edge.endpoints[Edge::START]->posn[Vertex::X] == -1 &&
+		//		current_edge.endpoints[Edge::START]->posn[Vertex::Y] == -1 &&
+		//		current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1 &&
+		//		current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1) {
+		//		break;
+		//	}
+		//}
+
+		edgeBegin1.x = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+		edgeBegin1.z = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+
+		edgeEnd1.x = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+		edgeEnd1.z = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+
+		edgeEnd2.x = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+		edgeEnd2.z = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+
+		edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+		edgeBegin2.z = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		
+
+
+		//float x0, x1, y0, y1;
+		//x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
+		//x1 = edges[i]->endpoints[Edge::END]->posn[Vertex::X];
+		//y0 = edges[i]->endpoints[Edge::START]->posn[Vertex::Y];
+		//y1 = edges[i]->endpoints[Edge::END]->posn[Vertex::Y];
+		//float end_points[2][2] = { {x0,y0},{x1,y1} };
+
+
+
+		vector<Vector4> current_vertices = {
+			edgeBegin1,
+			edgeEnd1,
+			edgeEnd2,
+			edgeBegin2
+		};
+		output_vertices.push_back(current_vertices);
 	}
 
-	return output_edges;
+	return output_vertices;
 }
