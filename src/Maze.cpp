@@ -908,14 +908,6 @@ Save(const char *filename)
 
 //clip an edge with a clip line
 void clip(Edge& edge, const LineSeg clip_line) {
-
-	//(ix,iy),(kx,ky) are the coordinate values of the points 
-	// i and k form a line in polygon 
-	//int i = 0;
-	//int k = 1;
-	//float ix = poly_points[i][0], iy = poly_points[i][1];
-	//float kx = poly_points[k][0], ky = poly_points[k][1];
-
 	LineSeg edgeLine(
 		edge.endpoints[Edge::START]->posn[Vertex::X],
 		edge.endpoints[Edge::START]->posn[Vertex::Y],
@@ -929,7 +921,7 @@ void clip(Edge& edge, const LineSeg clip_line) {
 
 	float edge_vector[2] = {
 		edge.endpoints[Edge::END]->posn[Vertex::X] - edge.endpoints[Edge::START]->posn[Vertex::X],
-		edge.endpoints[Edge::END]->posn[Vertex::Y] - edge.endpoints[Edge::START]->posn[Vertex::X]
+		edge.endpoints[Edge::END]->posn[Vertex::Y] - edge.endpoints[Edge::START]->posn[Vertex::Y]
 	};
 
 	Edge clip_edge(0,
@@ -942,11 +934,12 @@ void clip(Edge& edge, const LineSeg clip_line) {
 	// Case 1 : edge and clip_line has intersection
 	if (cross_param > 0 && cross_param < 1) {
 		//intersectino point
-		Vertex newPoint(0, edgeLine.start[0] + edge_vector[0], edgeLine.start[1] + edge_vector[1]);
+		Vertex newPoint(0, edgeLine.start[0] + cross_param*edge_vector[0], edgeLine.start[1] + cross_param * edge_vector[1]);
 
 		//如果edge start 在 clip line 的右邊(裡邊)，則存入new point & edge start
 		//否則存入 new point & edge end
-		if (clip_edge.Point_Side(edge_x1, edge_y1) == Edge::RIGHT) {
+		char point_side = clip_edge.Point_Side(edge_x1, edge_y1);
+		if (point_side == Edge::RIGHT) {
 			edge.endpoints[Edge::END]->posn[Vertex::X] = newPoint.posn[Vertex::X];
 			edge.endpoints[Edge::END]->posn[Vertex::Y] = newPoint.posn[Vertex::Y];
 		}
@@ -960,7 +953,8 @@ void clip(Edge& edge, const LineSeg clip_line) {
 	if (cross_param < 0 || cross_param > 1) {
 		//如果有一點 在 clip line 的右邊(裡邊)，則不更動edge的值
 		//否則將edge設為-1
-		if (clip_edge.Point_Side(edge_x1, edge_y1) == Edge::RIGHT) {
+		char point_side = clip_edge.Point_Side(edge_x1, edge_y1);
+		if (point_side == Edge::RIGHT) {
 			//don't need to modify
 		}
 		else {
@@ -978,34 +972,34 @@ vector<vector<Vector4>> Maze::clip_edges() {
 
 
 	//clip plane is formed by these four lines
-	//視錐線 (in x-right, y-forward coordinate)
+	//視錐線 (in x right, -z up coordinate)
 	//line1, near
 	LineSeg line1(
-		0.01 * tan(To_Radians(-viewer_fov / 2.0)),
-		0.01,
 		0.01 * tan(To_Radians(viewer_fov / 2.0)),
-		0.01
+		-0.01,
+		-0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		-0.01
 	);
 	//line2 left
 	LineSeg line2(
-		0.01 * tan(To_Radians(viewer_fov / 2.0)),
-		0.01,
-		200 * tan(To_Radians(viewer_fov / 2.0)),
-		200
+		-0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		-0.01,
+		-200 * tan(To_Radians(viewer_fov / 2.0)),
+		-200
 	);
 	//line3 far
 	LineSeg line3(
-		200 * tan(To_Radians(viewer_fov / 2.0)),
-		200,
+		-200 * tan(To_Radians(viewer_fov / 2.0)),
+		-200,
 		200 * tan(To_Radians(-viewer_fov / 2.0)),
-		200
+		-200
 	);
 	//line4 right
 	LineSeg line4(
 		200 * tan(To_Radians(-viewer_fov / 2.0)),
-		200,
+		-200,
 		0.01 * tan(To_Radians(-viewer_fov / 2.0)),
-		0.01
+		-0.01
 	);
 
 	vector<LineSeg> clip_lines = { line1,line2,line3,line4 };
@@ -1048,6 +1042,7 @@ vector<vector<Vector4>> Maze::clip_edges() {
 		//edgestart(x, y)=>(y, height, x, w) vector4(x, y, z, w), the z is negative the the point is in front of camera
 
 		cout << i << endl;
+		cout << "Before: " << endl;
 		cout << edgeBegin1 << endl;
 		cout << edgeEnd1 << endl;
 		cout << endl;
@@ -1057,14 +1052,14 @@ vector<vector<Vector4>> Maze::clip_edges() {
 		//可能需要解構，看起來vertex沒有釋放
 		Edge current_edge(
 			i,
-			new Vertex(0, edgeBegin1.z, edgeBegin1.x),
-			new Vertex(0, edgeEnd1.z, edgeEnd1.x),
+			new Vertex(0, edgeBegin1.x, edgeBegin1.z),
+			new Vertex(0, edgeEnd1.x, edgeEnd1.z),
 			edges[i]->color[0],
 			edges[i]->color[1],
 			edges[i]->color[2]
 		);
 
-		//clip(current_edge, clip_lines[0]);
+		clip(current_edge, clip_lines[0]);
 		//for (int j = 0; j < clip_lines.size(); ++j) {
 		//	clip(current_edge, clip_lines[j]);
 		//	//outside of the clip plane
@@ -1076,19 +1071,24 @@ vector<vector<Vector4>> Maze::clip_edges() {
 		//	}
 		//}
 
-		edgeBegin1.x = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
-		edgeBegin1.z = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin1.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin1.z = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
 
-		edgeEnd1.x = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
-		edgeEnd1.z = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd1.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd1.z = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
 
-		edgeEnd2.x = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
-		edgeEnd2.z = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd2.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd2.z = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
 
-		edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
-		edgeBegin2.z = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin2.z = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
 		
-
+		cout << i << endl;
+		cout << "After: " << endl;
+		cout << edgeBegin1 << endl;
+		cout << edgeEnd1 << endl;
+		cout << endl;
+		cout << endl;
 
 		//float x0, x1, y0, y1;
 		//x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
