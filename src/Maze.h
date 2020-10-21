@@ -20,7 +20,10 @@
 #define _MAZE_H_
 
 #include <FL/math.h> // Use FLTK's math header because it defines M_PI
+#include <vector>
 #include "Cell.h"
+#include "Matrices.h"
+#include "Vectors.h"
 
 //************************************************************************
 //
@@ -96,10 +99,10 @@ class Maze {
 
 		// Draws the first-person view of the maze. It is passed the focal distance.
 		// THIS IS THE FUINCTION YOU SHOULD MODIFY.
-		void	Draw_View(const float);
+		void	Draw_View(const float, Matrix4 projection, Matrix4 modelview);
 
 		// Draws the Walls
-		void Draw_Wall(const float start[2], const float end[2], const float color[3]);
+		void Draw_Wall(const std::vector<Vector4>, const float color[3]);
 
 		// Save the maze to a file of the given name.
 		bool	Save(const char*);
@@ -119,6 +122,9 @@ class Maze {
 		void    Set_Extents(void);
 		void    Find_View_Cell(Cell*);
 
+		//clip all edges to my view frustum, and output the edges in view
+		std::vector<std::vector<Vector4>> clip_edges();
+
 	private:
 		Cell				*view_cell;// The cell that currently contains the view
 										  // point. You will need to use this.
@@ -134,6 +140,9 @@ class Maze {
 		float	min_yp;	// The minimum y location of any vertex in the maze.
 		float	max_xp;	// The maximum x location of any vertex in the maze.
 		float	max_yp;	// The maximum y location of any vertex in the maze.
+
+		Matrix4 projection_matrix; // The local projection matrix
+		Matrix4 modelview_matrix; // The local modelview matrix
 
 	public:
 		static const char	X; // Used to index into the viewer's position

@@ -26,6 +26,10 @@
 #include <FL/fl_draw.h>
 #include <Fl/gl.h>
 #include <GL/glu.h>
+#include <iostream>
+#include "LineSeg.h"
+
+using namespace std;
 
 const char Maze::X = 0;
 const char Maze::Y = 1;
@@ -280,10 +284,14 @@ Build_Connectivity(const int num_x, const int num_y,
 		for ( j = 0 ; j < num_x ; j++ ) {
 			int vs = row + j;
 			int ve = row + j + 1;
-			edges[k] = new Edge(k, vertices[vs], vertices[ve],
-			rand() / (float)RAND_MAX * 0.5f + 0.25f,
-			rand() / (float)RAND_MAX * 0.5f + 0.25f,
-			rand() / (float)RAND_MAX * 0.5f + 0.25f);
+			edges[k] = new Edge(
+				k, 
+				vertices[vs], 
+				vertices[ve],
+				rand() / (float)RAND_MAX * 0.5f + 0.25f,
+				rand() / (float)RAND_MAX * 0.5f + 0.25f,
+				rand() / (float)RAND_MAX * 0.5f + 0.25f
+			);
 			k++;
 		}
 	}
@@ -454,24 +462,22 @@ Set_Extents(void)
 //   that the point is "outside" (meaning that it might be inside the
 //   new cell).
 //======================================================================
-void Maze::
-Find_View_Cell(Cell *seed_cell)
+void Maze::Find_View_Cell(Cell* seed_cell)
 //======================================================================
 {
-	Cell    *new_cell;
+	Cell* new_cell;
 
 	// 
-	while ( ! ( seed_cell->Point_In_Cell(viewer_posn[X], viewer_posn[Y],
-													 viewer_posn[Z], new_cell) ) ) {
-		if ( new_cell == 0 ) {
+	while (!(seed_cell->Point_In_Cell(viewer_posn[X], viewer_posn[Y], viewer_posn[Z], new_cell))) {
+		if (new_cell == 0) {
 			// The viewer is outside the top or bottom of the maze.
 			throw new MazeException("Maze: View not in maze\n");
 		}
 
 		seed_cell = new_cell;
-    }
-    
-    view_cell = seed_cell;
+	}
+
+	view_cell = seed_cell;
 }
 
 
@@ -481,11 +487,10 @@ Find_View_Cell(Cell *seed_cell)
 //   between the viewer's location and the walls of the maze and prevent
 //   the viewer from passing through walls.
 //======================================================================
-void Maze::
-Move_View_Posn(const float dx, const float dy, const float dz)
+void Maze::Move_View_Posn(const float dx, const float dy, const float dz)
 //======================================================================
 {
-	Cell    *new_cell;
+	Cell* new_cell;
 	float   xs, ys, zs, xe, ye, ze;
 
 	// Move the viewer by the given amount. This does collision testing to
@@ -501,10 +506,8 @@ Move_View_Posn(const float dx, const float dy, const float dz)
 	ze = zs + dz;
 
 	// Fix the z to keep it in the maze.
-	if ( ze > 1.0f - BUFFER )
-		//ze = 1.0f - BUFFER;
-	if ( ze < BUFFER - 1.0f )
-		//ze = BUFFER - 1.0f;
+	if (ze > 1.0f - BUFFER) ze = 1.0f - BUFFER;
+	if (ze < BUFFER - 1.0f) ze = BUFFER - 1.0f;
 
 	// Clip_To_Cell clips the motion segment to the view_cell if the
 	// segment intersects an opaque edge. If the segment intersects
@@ -513,7 +516,7 @@ Move_View_Posn(const float dx, const float dy, const float dz)
 	// and it returns the cell the viewer is entering. We keep going
 	// until Clip_To_Cell returns NULL, meaning we've done as much of
 	// the motion as is possible without passing through walls.
-	while ( ( new_cell = view_cell->Clip_To_Cell(xs, ys, xe, ye, BUFFER) ) )
+	while ((new_cell = view_cell->Clip_To_Cell(xs, ys, xe, ye, BUFFER)))
 		view_cell = new_cell;
 
 	// The viewer is at the end of the motion segment, which may have
@@ -629,7 +632,7 @@ Draw_Map(int min_x, int min_y, int max_x, int max_y)
 //   THIS IS THE FUINCTION YOU SHOULD MODIFY.
 //======================================================================
 void Maze::
-Draw_View(const float focal_dist)
+Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 //======================================================================
 {
 	frame_num++;
@@ -639,18 +642,20 @@ Draw_View(const float focal_dist)
 	// The rest is up to you!
 	//###################################################################
 	
-	glClear(GL_DEPTH_BUFFER_BIT);
+
+	vector<vector<Vector4>> edgePoints_in_view = clip_edges();
 	
-	glEnable(GL_DEPTH_TEST);
-	for (int i = 0; i < (int)num_edges; ++i) {
-		float edge_start[2] = {
-			edges[i]->endpoints[Edge::START]->posn[Vertex::X],
-			edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
-		};
-		float edge_end[2] = {
-			edges[i]->endpoints[Edge::END]->posn[Vertex::X],
-			edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
-		};
+
+
+	projection_matrix = projection;
+	modelview_matrix = modelview;
+	
+
+	//Can't use these functions
+	//glClear(GL_DEPTH_BUFFER_BIT);
+	//glEnable(GL_DEPTH_TEST);
+	for (int i = 0; i < edgePoints_in_view.size(); ++i) {
+
 		float color[3] = {
 			edges[i]->color[0],
 			edges[i]->color[1],
@@ -658,22 +663,71 @@ Draw_View(const float focal_dist)
 		};
 
 		if (edges[i]->opaque) {
-			Draw_Wall(edge_start, edge_end, color);
+			Draw_Wall(edgePoints_in_view[i], color);
 		}
 	}
 
 }
 
 //Draw the wall function
-void Maze::Draw_Wall(const float start[2], const float end[2], const float color[3]) {
-	float edge0[3] = { start[Y], 0.0f, start[X] };
-	float edge1[3] = { end[Y], 0.0f, end[X] };
+void Maze::Draw_Wall(const std::vector<Vector4> vertices, const float color[3]) {
+
+	//four vertices contstruct a wall
+	Vector4 edgeBegin1 = vertices[0];
+	Vector4 edgeEnd1 = vertices[1];
+	Vector4 edgeEnd2 = vertices[2];
+	Vector4 edgeBegin2 = vertices[3];
+
+	////mutiply the vertices by the modelview matrix
+	//edgeBegin1 = modelview_matrix * edgeBegin1;
+	//edgeEnd1 = modelview_matrix * edgeEnd1;
+	//edgeEnd2 = modelview_matrix * edgeEnd2;
+	//edgeBegin2 = modelview_matrix * edgeBegin2;
+
+	//cout << edgeBegin1 << endl;
+	//cout << edgeEnd1 << endl;
+	//cout << endl;
+	//cout << endl;
+
+	//mutiply the vertices by the projection matrix
+	edgeBegin1 = projection_matrix * edgeBegin1;
+	edgeEnd1 = projection_matrix * edgeEnd1;
+	edgeEnd2 = projection_matrix * edgeEnd2;
+	edgeBegin2 = projection_matrix * edgeBegin2;
+
+	//cout << edgeBegin1 << endl;
+	//cout << edgeEnd1 << endl;
+	//cout << endl;
+	//if (edgeBegin1.w < 0 || edgeEnd1.w < 0) return;
+
+
 	glBegin(GL_POLYGON);
 	glColor3fv(color);
-	glVertex3f(edge0[X], 1.0f, edge0[Z]);
-	glVertex3f(edge1[X], 1.0f, edge1[Z]);
-	glVertex3f(edge1[X], -1.0f, edge1[Z]);
-	glVertex3f(edge0[X], -1.0f, edge0[Z]);
+
+	//x, y, z, w given
+	//glVertex4f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z, edgeBegin1.w);
+	//glVertex4f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z, edgeEnd1.w);
+	//glVertex4f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z, edgeEnd2.w);
+	//glVertex4f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z, edgeBegin2.w);
+
+	edgeBegin1 /= abs(edgeBegin1.w);
+	edgeEnd1 /= abs(edgeEnd1.w);
+	edgeEnd2 /= abs(edgeEnd2.w);
+	edgeBegin2 /= abs(edgeBegin2.w);
+
+	//glVertex3f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z);
+	//glVertex3f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z);
+	//glVertex3f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z);
+	//glVertex3f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z);
+
+	
+
+
+	glVertex2f(edgeBegin1.x, edgeBegin1.y);
+	glVertex2f(edgeEnd1.x, edgeEnd1.y);
+	glVertex2f(edgeEnd2.x, edgeEnd2.y);
+	glVertex2f(edgeBegin2.x, edgeBegin2.y);
+
 	glEnd();
 }
 
@@ -692,33 +746,34 @@ Draw_Frustum(int min_x, int min_y, int max_x, int max_y)
 
 	// Draws the view frustum in the map. Sets up all the same viewing
 	// parameters as draw().
-	scale_x	= ( max_x - min_x - 10 ) / ( max_xp - min_xp );
-	scale_y	= ( max_y - min_y - 10 ) / ( max_yp - min_yp );
-	scale		= scale_x > scale_y ? scale_y : scale_x;
-	height	= (int)ceil(scale * ( max_yp - min_yp ));
+	scale_x = (max_x - min_x - 10) / (max_xp - min_xp);
+	scale_y = (max_y - min_y - 10) / (max_yp - min_yp);
+	scale = scale_x > scale_y ? scale_y : scale_x;
+	height = (int)ceil(scale * (max_yp - min_yp));
 
 	min_x += 5;
 	min_y += 5;
 
-	view_x = ( viewer_posn[X] - min_xp ) * scale;
-	view_y = ( viewer_posn[Y] - min_yp ) * scale;
-	fl_line(min_x + (int)floor(view_x + 
-			  cos(To_Radians(viewer_dir+viewer_fov / 2.0)) * scale),
-			  min_y + height- 
-			  (int)floor(view_y + 
-							 sin(To_Radians(viewer_dir+viewer_fov / 2.0)) * 
-							 scale),
-				min_x + (int)floor(view_x),
-				min_y + height - (int)floor(view_y));
-	fl_line(min_x + (int)floor(view_x + 
-										cos(To_Radians(viewer_dir-viewer_fov / 2.0))	* 
-										scale),
-				min_y + height- 
-				(int)floor(view_y + sin(To_Radians(viewer_dir-viewer_fov / 2.0)) *
-				scale),
-				min_x + (int)floor(view_x),
-				min_y + height - (int)floor(view_y));
-	}
+	view_x = (viewer_posn[X] - min_xp) * scale;
+	view_y = (viewer_posn[Y] - min_yp) * scale;
+
+	fl_line(
+		min_x + (int)(view_x + cos(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale),
+		min_y + height - (int)(view_y + sin(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale),
+		min_x + (int)(view_x),
+		min_y + height - (int)(view_y));
+	//system("cls");
+	//cout << "x0: " << min_x + (int)floor(view_x + cos(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale) << endl;
+	//cout << "x1: " << min_y + height - (int)floor(view_y + sin(To_Radians(viewer_dir + viewer_fov / 2.0)) * scale) << endl;
+	//cout << "y0: " << min_x + (int)floor(view_x) << endl;
+	//cout << "y0: " << min_y + height - (int)floor(view_y) << endl;
+	//cout << endl;
+	fl_line(
+		min_x + (int)(view_x + cos(To_Radians(viewer_dir - viewer_fov / 2.0)) * scale),
+		min_y + height - (int)(view_y + sin(To_Radians(viewer_dir - viewer_fov / 2.0)) * scale),
+		min_x + (int)(view_x),
+		min_y + height - (int)(view_y));
+}
 
 
 //**********************************************************************
@@ -849,4 +904,209 @@ Save(const char *filename)
 	fclose(f);
 
 	return true;
+}
+
+//clip an edge with a clip line
+void clip(Edge& edge, const LineSeg clip_line) {
+	LineSeg edgeLine(
+		edge.endpoints[Edge::START]->posn[Vertex::X],
+		edge.endpoints[Edge::START]->posn[Vertex::Y],
+		edge.endpoints[Edge::END]->posn[Vertex::X],
+		edge.endpoints[Edge::END]->posn[Vertex::Y]
+	);
+	float edge_x1 = edge.endpoints[Edge::START]->posn[Vertex::X];
+	float edge_y1 = edge.endpoints[Edge::START]->posn[Vertex::Y];
+	float edge_x2 = edge.endpoints[Edge::END]->posn[Vertex::X];
+	float edge_y2 = edge.endpoints[Edge::END]->posn[Vertex::Y];
+
+	float edge_vector[2] = {
+		edge.endpoints[Edge::END]->posn[Vertex::X] - edge.endpoints[Edge::START]->posn[Vertex::X],
+		edge.endpoints[Edge::END]->posn[Vertex::Y] - edge.endpoints[Edge::START]->posn[Vertex::Y]
+	};
+
+	Edge clip_edge(0,
+		new Vertex(0,clip_line.start[0], clip_line.start[1]), 
+		new Vertex(0, clip_line.end[0], clip_line.end[1]),
+		1.0, 1.0, 1.0);
+
+	//對edge牆壁來說，與clip_line的cross_param > 1 或是 < 0，代表兩者沒有交點
+	float cross_param = edgeLine.Cross_Param(clip_line);
+	// Case 1 : edge and clip_line has intersection
+	if (cross_param > 0 && cross_param < 1) {
+		//intersectino point
+		Vertex newPoint(0, edgeLine.start[0] + cross_param*edge_vector[0], edgeLine.start[1] + cross_param * edge_vector[1]);
+
+		//如果edge start 在 clip line 的右邊(裡邊)，則存入new point & edge start
+		//否則存入 new point & edge end
+		char point_side = clip_edge.Point_Side(edge_x1, edge_y1);
+		if (point_side == Edge::RIGHT) {
+			edge.endpoints[Edge::END]->posn[Vertex::X] = newPoint.posn[Vertex::X];
+			edge.endpoints[Edge::END]->posn[Vertex::Y] = newPoint.posn[Vertex::Y];
+		}
+		else {
+			edge.endpoints[Edge::START]->posn[Vertex::X] = newPoint.posn[Vertex::X];
+			edge.endpoints[Edge::START]->posn[Vertex::Y] = newPoint.posn[Vertex::Y];
+		}
+	}
+
+	// Case 2: edge and clip_line has no intersection
+	if (cross_param < 0 || cross_param > 1) {
+		//如果有一點 在 clip line 的右邊(裡邊)，則不更動edge的值
+		//否則將edge設為-1
+		char point_side = clip_edge.Point_Side(edge_x1, edge_y1);
+		if (point_side == Edge::RIGHT) {
+			//don't need to modify
+		}
+		else {
+			edge.endpoints[Edge::START]->posn[Vertex::X] = -1;
+			edge.endpoints[Edge::START]->posn[Vertex::Y] = -1;
+			edge.endpoints[Edge::END]->posn[Vertex::X] = -1;
+			edge.endpoints[Edge::END]->posn[Vertex::Y] = -1;
+		}
+	}
+}
+
+vector<vector<Vector4>> Maze::clip_edges() {
+	//construct output vertices
+	vector<vector<Vector4>> output_vertices;
+
+
+	//clip plane is formed by these four lines
+	//視錐線 (in x right, z up coordinate)
+	//line1, near
+	LineSeg line1(
+		0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		0.01,
+		-0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		0.01
+	);
+	//line2 left
+	LineSeg line2(
+		-0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		0.01,
+		-200 * tan(To_Radians(viewer_fov / 2.0)),
+		200
+	);
+	//line3 far
+	LineSeg line3(
+		-200 * tan(To_Radians(viewer_fov / 2.0)),
+		200,
+		200 * tan(To_Radians(viewer_fov / 2.0)),
+		200
+	);
+	//line4 right
+	LineSeg line4(
+		200 * tan(To_Radians(viewer_fov / 2.0)),
+		200,
+		0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		0.01
+	);
+
+	vector<LineSeg> clip_lines = { line1,line2,line3,line4 };
+
+	//LineSeg testLine1(0,1,2,1);
+	//LineSeg testLine2(-2,0,-2,3);
+	//cout << "crossPraram: " << testLine1.Cross_Param(testLine2) << endl;
+	//Edge clip_edge(0,
+	//	new Vertex(0, testLine1.start[0], testLine1.start[1]),
+	//	new Vertex(0, testLine1.end[0], testLine1.end[1]),
+	//	1.0, 1.0, 1.0);
+	//cout << "point side: " << (int)clip_edge.Point_Side(1, -1) << endl;
+
+
+	//iterate all the edges, and clip them to the output_edges
+	for (int i = 0; i < (int)num_edges; ++i) {
+		//cout << "i: " << i << endl;
+
+		//initialize vertices
+		float edge_start[2] = {
+			edges[i]->endpoints[Edge::START]->posn[Vertex::X],
+			edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
+		};
+		float edge_end[2] = {
+			edges[i]->endpoints[Edge::END]->posn[Vertex::X],
+			edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
+		};
+		Vector4 edgeBegin1(edge_start[Y], 1.0, edge_start[X], 1);
+		Vector4 edgeEnd1(edge_end[Y], 1.0, edge_end[X], 1);
+		Vector4 edgeEnd2(edge_end[Y], -1.0, edge_end[X], 1);
+		Vector4 edgeBegin2(edge_start[Y], -1.0, edge_start[X], 1);
+
+		//mutiply the vertices by the modelview matrix
+		edgeBegin1 = modelview_matrix * edgeBegin1;
+		edgeEnd1 = modelview_matrix * edgeEnd1;
+		edgeEnd2 = modelview_matrix * edgeEnd2;
+		edgeBegin2 = modelview_matrix * edgeBegin2;
+
+		//after mutiply the modelview matrix, these points are in this format
+		//edgestart(x, y)=>(y, height, x, w) vector4(x, y, z, w), the z is negative the the point is in front of camera
+
+		//cout << i << endl;
+		//cout << "Before: " << endl;
+		//cout << edgeBegin1 << endl;
+		//cout << edgeEnd1 << endl;
+		//cout << endl;
+		//cout << endl;
+		
+		//mutiply the z value by -1 to make it x right z up coordinate
+		//可能需要解構，看起來vertex沒有釋放
+		Edge current_edge(
+			i,
+			new Vertex(0, edgeBegin1.x, -edgeBegin1.z),
+			new Vertex(0, edgeEnd1.x, -edgeEnd1.z),
+			edges[i]->color[0],
+			edges[i]->color[1],
+			edges[i]->color[2]
+		);
+
+		//clip(current_edge, clip_lines[0]);
+		for (int j = 0; j < clip_lines.size(); ++j) {
+			clip(current_edge, clip_lines[j]);
+			//outside of the clip plane
+			if (current_edge.endpoints[Edge::START]->posn[Vertex::X] == -1 &&
+				current_edge.endpoints[Edge::START]->posn[Vertex::Y] == -1 &&
+				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1 &&
+				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1) {
+				break;
+			}
+		}
+
+		edgeBegin1.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin1.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+
+		edgeEnd1.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd1.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+
+		edgeEnd2.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd2.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+
+		edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin2.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+		
+		//cout << i << endl;
+		//cout << "After: " << endl;
+		//cout << edgeBegin1 << endl;
+		//cout << edgeEnd1 << endl;
+		//cout << endl;
+		//cout << endl;
+
+		//float x0, x1, y0, y1;
+		//x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
+		//x1 = edges[i]->endpoints[Edge::END]->posn[Vertex::X];
+		//y0 = edges[i]->endpoints[Edge::START]->posn[Vertex::Y];
+		//y1 = edges[i]->endpoints[Edge::END]->posn[Vertex::Y];
+		//float end_points[2][2] = { {x0,y0},{x1,y1} };
+
+
+
+		vector<Vector4> current_vertices = {
+			edgeBegin1,
+			edgeEnd1,
+			edgeEnd2,
+			edgeBegin2
+		};
+		output_vertices.push_back(current_vertices);
+	}
+
+	return output_vertices;
 }

@@ -151,7 +151,7 @@ draw(void)
 		//cout << projection_matrix << endl;
 
 		//apply this projection matrix
-		glMultMatrixf(projection_matrix.get());
+		//glMultMatrixf(projection_matrix.get());
 
 		//Debug
 		//get projection_matrix
@@ -206,7 +206,7 @@ draw(void)
 		Matrix4 modelview_matrix = construct_modelview_matrix(eye_pos, targetVector, upDirection);
 
 		//apply this modelview matrix
-		glMultMatrixf(modelview_matrix.get());
+		//glMultMatrixf(modelview_matrix.get());
 
 		//cout << "my modelview matrix: " << endl;
 		//cout << modelview_matrix << endl;
@@ -223,7 +223,7 @@ draw(void)
 		//}
 		//cout << "\n\n";
 
-		maze->Draw_View(focal_length);
+		maze->Draw_View(focal_length, projection_matrix, modelview_matrix);
 	}
 }
 

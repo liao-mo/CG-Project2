@@ -30,11 +30,16 @@
 #include <Fl/Fl_Counter.h>
 #include <Fl/Fl_Window.h>
 
+
+
 // Constants related to the interface
-static const int    MAP_WINDOW_W = 400*2;
-static const int    MAP_WINDOW_H = 400*2;
-static const int    MAZE_WINDOW_W = 600*2;
-static const int    MAZE_WINDOW_H = 600*2;
+
+float size_adjust = 1.2;
+
+static const int    MAP_WINDOW_W = 400* size_adjust;
+static const int    MAP_WINDOW_H = 400* size_adjust;
+static const int    MAZE_WINDOW_W = 600* size_adjust;
+static const int    MAZE_WINDOW_H = 600* size_adjust;
 static const int    BUTTON_W = 100;
 static const int    BUTTON_H = 25;
 static const int    GAP = 5;
@@ -86,7 +91,7 @@ static void Load_Callback(Fl_Widget *widget, void *data)
 	const char	*filename;
 	Maze	*new_maze;
 
-	filename = fl_input("Enter the filename:", "Sources/maze-10x10-100");
+	filename = fl_input("Enter the filename:", "Sources/maze-1x1-45");
 
 	if ( ! filename )
 		return;
