@@ -1,39 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\nb\Desktop\Github projects\CG-Project2\src\MapWidget.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\src\MapWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\nb\Desktop\Github projects\CG-Project2\src\Maze.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\src\Maze.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\nb\Desktop\Github projects\CG-Project2\src\MazeWindow.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\src\MazeWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\nb\Desktop\Github projects\CG-Project2\src\RunMaze.cpp">
+    <ClCompile Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\src\RunMaze.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\nb\Desktop\Github projects\CG-Project2\src\MapWidget.h">
+    <ClInclude Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\src\MapWidget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\nb\Desktop\Github projects\CG-Project2\src\Maze.h">
+    <ClInclude Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\src\Maze.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\nb\Desktop\Github projects\CG-Project2\src\MazeWindow.h">
+    <ClInclude Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\src\MazeWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\nb\Desktop\Github projects\CG-Project2\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\USER\Desktop\新增資料夾\CG-Project2\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{867ECBD8-14B4-30F9-B189-08F0D72ED23A}</UniqueIdentifier>
+      <UniqueIdentifier>{EFD45A4C-067B-3470-A89B-B8043A324EE1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{027D23BC-0253-372A-A400-2B1003386A1B}</UniqueIdentifier>
+      <UniqueIdentifier>{FD63F6F0-9A3B-309C-8041-CA7DC3B7AC10}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
