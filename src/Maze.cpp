@@ -705,10 +705,10 @@ void Maze::Draw_Wall(const std::vector<Vector4> vertices, const float color[3]) 
 	glColor3fv(color);
 
 	//x, y, z, w given
-	glVertex4f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z, edgeBegin1.w);
-	glVertex4f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z, edgeEnd1.w);
-	glVertex4f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z, edgeEnd2.w);
-	glVertex4f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z, edgeBegin2.w);
+	//glVertex4f(edgeBegin1.x, edgeBegin1.y, edgeBegin1.z, edgeBegin1.w);
+	//glVertex4f(edgeEnd1.x, edgeEnd1.y, edgeEnd1.z, edgeEnd1.w);
+	//glVertex4f(edgeEnd2.x, edgeEnd2.y, edgeEnd2.z, edgeEnd2.w);
+	//glVertex4f(edgeBegin2.x, edgeBegin2.y, edgeBegin2.z, edgeBegin2.w);
 
 	edgeBegin1 /= abs(edgeBegin1.w);
 	edgeEnd1 /= abs(edgeEnd1.w);
@@ -723,10 +723,10 @@ void Maze::Draw_Wall(const std::vector<Vector4> vertices, const float color[3]) 
 	
 
 
-	//glVertex2f(edgeBegin1.x, edgeBegin1.y);
-	//glVertex2f(edgeEnd1.x, edgeEnd1.y);
-	//glVertex2f(edgeEnd2.x, edgeEnd2.y);
-	//glVertex2f(edgeBegin2.x, edgeBegin2.y);
+	glVertex2f(edgeBegin1.x, edgeBegin1.y);
+	glVertex2f(edgeEnd1.x, edgeEnd1.y);
+	glVertex2f(edgeEnd2.x, edgeEnd2.y);
+	glVertex2f(edgeBegin2.x, edgeBegin2.y);
 
 	glEnd();
 }
@@ -972,45 +972,45 @@ vector<vector<Vector4>> Maze::clip_edges() {
 
 
 	//clip plane is formed by these four lines
-	//視錐線 (in x right, -z up coordinate)
+	//視錐線 (in x right, z up coordinate)
 	//line1, near
 	LineSeg line1(
 		0.01 * tan(To_Radians(viewer_fov / 2.0)),
-		-0.01,
+		0.01,
 		-0.01 * tan(To_Radians(viewer_fov / 2.0)),
-		-0.01
+		0.01
 	);
 	//line2 left
 	LineSeg line2(
 		-0.01 * tan(To_Radians(viewer_fov / 2.0)),
-		-0.01,
+		0.01,
 		-200 * tan(To_Radians(viewer_fov / 2.0)),
-		-200
+		200
 	);
 	//line3 far
 	LineSeg line3(
 		-200 * tan(To_Radians(viewer_fov / 2.0)),
-		-200,
-		200 * tan(To_Radians(-viewer_fov / 2.0)),
-		-200
+		200,
+		200 * tan(To_Radians(viewer_fov / 2.0)),
+		200
 	);
 	//line4 right
 	LineSeg line4(
-		200 * tan(To_Radians(-viewer_fov / 2.0)),
-		-200,
-		0.01 * tan(To_Radians(-viewer_fov / 2.0)),
-		-0.01
+		200 * tan(To_Radians(viewer_fov / 2.0)),
+		200,
+		0.01 * tan(To_Radians(viewer_fov / 2.0)),
+		0.01
 	);
 
 	vector<LineSeg> clip_lines = { line1,line2,line3,line4 };
 
-	LineSeg testLine1(0,1,2,1);
+	//LineSeg testLine1(0,1,2,1);
 	//LineSeg testLine2(-2,0,-2,3);
 	//cout << "crossPraram: " << testLine1.Cross_Param(testLine2) << endl;
-	Edge clip_edge(0,
-		new Vertex(0, testLine1.start[0], testLine1.start[1]),
-		new Vertex(0, testLine1.end[0], testLine1.end[1]),
-		1.0, 1.0, 1.0);
+	//Edge clip_edge(0,
+	//	new Vertex(0, testLine1.start[0], testLine1.start[1]),
+	//	new Vertex(0, testLine1.end[0], testLine1.end[1]),
+	//	1.0, 1.0, 1.0);
 	//cout << "point side: " << (int)clip_edge.Point_Side(1, -1) << endl;
 
 
@@ -1041,54 +1041,54 @@ vector<vector<Vector4>> Maze::clip_edges() {
 		//after mutiply the modelview matrix, these points are in this format
 		//edgestart(x, y)=>(y, height, x, w) vector4(x, y, z, w), the z is negative the the point is in front of camera
 
-		cout << i << endl;
-		cout << "Before: " << endl;
-		cout << edgeBegin1 << endl;
-		cout << edgeEnd1 << endl;
-		cout << endl;
-		cout << endl;
+		//cout << i << endl;
+		//cout << "Before: " << endl;
+		//cout << edgeBegin1 << endl;
+		//cout << edgeEnd1 << endl;
+		//cout << endl;
+		//cout << endl;
 		
-
+		//mutiply the z value by -1 to make it x right z up coordinate
 		//可能需要解構，看起來vertex沒有釋放
 		Edge current_edge(
 			i,
-			new Vertex(0, edgeBegin1.x, edgeBegin1.z),
-			new Vertex(0, edgeEnd1.x, edgeEnd1.z),
+			new Vertex(0, edgeBegin1.x, -edgeBegin1.z),
+			new Vertex(0, edgeEnd1.x, -edgeEnd1.z),
 			edges[i]->color[0],
 			edges[i]->color[1],
 			edges[i]->color[2]
 		);
 
-		clip(current_edge, clip_lines[0]);
-		//for (int j = 0; j < clip_lines.size(); ++j) {
-		//	clip(current_edge, clip_lines[j]);
-		//	//outside of the clip plane
-		//	if (current_edge.endpoints[Edge::START]->posn[Vertex::X] == -1 &&
-		//		current_edge.endpoints[Edge::START]->posn[Vertex::Y] == -1 &&
-		//		current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1 &&
-		//		current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1) {
-		//		break;
-		//	}
-		//}
+		//clip(current_edge, clip_lines[0]);
+		for (int j = 0; j < clip_lines.size(); ++j) {
+			clip(current_edge, clip_lines[j]);
+			//outside of the clip plane
+			if (current_edge.endpoints[Edge::START]->posn[Vertex::X] == -1 &&
+				current_edge.endpoints[Edge::START]->posn[Vertex::Y] == -1 &&
+				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1 &&
+				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1) {
+				break;
+			}
+		}
 
 		edgeBegin1.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
-		edgeBegin1.z = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+		edgeBegin1.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
 
 		edgeEnd1.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
-		edgeEnd1.z = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+		edgeEnd1.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
 
 		edgeEnd2.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
-		edgeEnd2.z = current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+		edgeEnd2.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
 
 		edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
-		edgeBegin2.z = current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+		edgeBegin2.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
 		
-		cout << i << endl;
-		cout << "After: " << endl;
-		cout << edgeBegin1 << endl;
-		cout << edgeEnd1 << endl;
-		cout << endl;
-		cout << endl;
+		//cout << i << endl;
+		//cout << "After: " << endl;
+		//cout << edgeBegin1 << endl;
+		//cout << edgeEnd1 << endl;
+		//cout << endl;
+		//cout << endl;
 
 		//float x0, x1, y0, y1;
 		//x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
