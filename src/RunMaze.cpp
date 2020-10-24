@@ -34,7 +34,7 @@
 
 // Constants related to the interface
 
-float size_adjust = 1.2;
+float size_adjust = 1.5;
 
 static const int    MAP_WINDOW_W = 400* size_adjust;
 static const int    MAP_WINDOW_H = 400* size_adjust;
@@ -45,7 +45,7 @@ static const int    BUTTON_H = 25;
 static const int    GAP = 5;
 
 // The time per frame, in seconds (enforced only by timeouts.)
-static const float  frame_time = 0.0016f;
+static const float  frame_time = 0.007f;
 
 // Global variables
 static MapWidget    *map_window;  // The window with the map of the maze in it.
@@ -91,7 +91,7 @@ static void Load_Callback(Fl_Widget *widget, void *data)
 	const char	*filename;
 	Maze	*new_maze;
 
-	filename = fl_input("Enter the filename:", "Sources/maze-1x1-45");
+	filename = fl_input("Enter the filename:", "Sources/maze-10x10-100");
 
 	if ( ! filename )
 		return;

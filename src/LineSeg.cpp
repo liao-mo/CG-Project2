@@ -37,7 +37,7 @@ LineSeg(Edge *e)
 // * Constructor for specifyng start and end point
 //======================================================================
 LineSeg::
-LineSeg(float xs, float ys, float xe, float ye)
+LineSeg(double xs, double ys, double xe, double ye)
 //======================================================================
 {
 	start[0] = xs;
@@ -55,12 +55,12 @@ LineSeg(float xs, float ys, float xe, float ye)
 //   DOES NOT tell you whether the edge is "entering" or "leaving".
 //   But you can use tests like Edge::Point_Side() to figure that out.
 //======================================================================
-float LineSeg::
+double LineSeg::
 Cross_Param(LineSeg e)
 //======================================================================
 {
-	float   dx1, dy1, dx2, dy2;
-	float   denom, s;
+	double   dx1, dy1, dx2, dy2;
+	double   denom, s;
 
 	// This computation comes from writing each segment in parametric form,
 	// and solving a simulataneous equation to determine the parameter

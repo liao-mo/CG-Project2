@@ -1,4 +1,4 @@
-C:/Users/nb/Desktop/Github projects/CG-Project2/build/CMakeFiles/MazeVisibility.dir
-C:/Users/nb/Desktop/Github projects/CG-Project2/build/CMakeFiles/MazeLib.dir
-C:/Users/nb/Desktop/Github projects/CG-Project2/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/nb/Desktop/Github projects/CG-Project2/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/pppoo/Desktop/Github projects/CG-Project2/build/CMakeFiles/MazeVisibility.dir
+C:/Users/pppoo/Desktop/Github projects/CG-Project2/build/CMakeFiles/MazeLib.dir
+C:/Users/pppoo/Desktop/Github projects/CG-Project2/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/pppoo/Desktop/Github projects/CG-Project2/build/CMakeFiles/ZERO_CHECK.dir

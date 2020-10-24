@@ -24,6 +24,7 @@
 #include "Cell.h"
 #include "Matrices.h"
 #include "Vectors.h"
+#include <set>
 
 //************************************************************************
 //
@@ -124,6 +125,10 @@ class Maze {
 
 		//clip all edges to my view frustum, and output the edges in view
 		std::vector<std::vector<Vector4>> clip_edges();
+
+		//return all the edges that are in my visible region using recursive cell method
+		std::vector<std::vector<Vector4>> edges_visibility();
+		void recursive_visibility(Cell* current_cell, const double fov_start, const double fov_end, std::set<int>& used_cell, std::vector<std::vector<Vector4>>& vertices);
 
 	private:
 		Cell				*view_cell;// The cell that currently contains the view

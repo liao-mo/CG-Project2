@@ -24,7 +24,7 @@ class LineSeg {
 
 	public:
 		// First constructor takes the endpoints.
-		LineSeg(float xs, float ys, float xe, float ye);
+		LineSeg(double xs, double ys, double xe, double ye);
 
 		// Second constructor takes an edge. The LineSeg created has the same
 		// start and end points as the edge.
@@ -36,11 +36,11 @@ class LineSeg {
 		// THIS FUNCTION IS EXTREMELY USEFUL FOR CLIPPING, but it 
 		// DOES NOT tell you whether the edge is "entering" or "leaving".
 		// But you can use tests like Edge::Point_Side() to figure that out.
-		float   Cross_Param(LineSeg);
+		double   Cross_Param(LineSeg);
 
 	public:
-		float   start[2];	// Starting point, x and y.
-		float   end[2];	// Ending point, x and y.
+		double   start[2];	// Starting point, x and y.
+		double   end[2];	// Ending point, x and y.
 };
 
 #endif
