@@ -19,6 +19,7 @@
 
 #include "Vertex.h"
 
+
 class Edge {
 
 	public:
@@ -36,7 +37,8 @@ class Edge {
 		// Given a cell, return the neighboring cell across this edge.
 		// This is very useful.
 		class Cell*	Neighbor(class Cell *cell) { 
-			return cell == neighbors[LEFT] ? neighbors[RIGHT] : neighbors[LEFT]; 
+			Cell* neighbor = (cell == neighbors[LEFT] ? neighbors[RIGHT] : neighbors[LEFT]);
+			return neighbor;
 		};
 
 		// Returns which side of the edge a cell lies. Valid return values are

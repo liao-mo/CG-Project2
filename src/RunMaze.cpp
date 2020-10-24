@@ -34,7 +34,7 @@
 
 // Constants related to the interface
 
-float size_adjust = 1.2;
+float size_adjust = 2;
 
 static const int    MAP_WINDOW_W = 400* size_adjust;
 static const int    MAP_WINDOW_H = 400* size_adjust;

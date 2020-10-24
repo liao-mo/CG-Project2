@@ -646,10 +646,11 @@ Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 
 	//cout << "current cell: " << view_cell->index << endl;
 
-	vector<vector<Vector4>> edgePoints_in_view = clip_edges();
+	//only clipping
+	//vector<vector<Vector4>> edgePoints_in_view = clip_edges();
 	
 	//visibility + clipping
-	//vector<vector<Vector4>> edgePoints_in_view = edges_visibility();
+	vector<vector<Vector4>> edgePoints_in_view = edges_visibility();
 
 	projection_matrix = projection;
 	modelview_matrix = modelview;
@@ -675,35 +676,17 @@ Draw_View(const float focal_dist, Matrix4 projection, Matrix4 modelview)
 
 //Draw the wall function
 void Maze::Draw_Wall(const std::vector<Vector4> vertices, const float color[3]) {
-
 	//four vertices contstruct a wall
 	Vector4 edgeBegin1 = vertices[0];
 	Vector4 edgeEnd1 = vertices[1];
 	Vector4 edgeEnd2 = vertices[2];
 	Vector4 edgeBegin2 = vertices[3];
 
-	////mutiply the vertices by the modelview matrix
-	//edgeBegin1 = modelview_matrix * edgeBegin1;
-	//edgeEnd1 = modelview_matrix * edgeEnd1;
-	//edgeEnd2 = modelview_matrix * edgeEnd2;
-	//edgeBegin2 = modelview_matrix * edgeBegin2;
-
-	//cout << edgeBegin1 << endl;
-	//cout << edgeEnd1 << endl;
-	//cout << endl;
-	//cout << endl;
-
 	//mutiply the vertices by the projection matrix
 	edgeBegin1 = projection_matrix * edgeBegin1;
 	edgeEnd1 = projection_matrix * edgeEnd1;
 	edgeEnd2 = projection_matrix * edgeEnd2;
 	edgeBegin2 = projection_matrix * edgeBegin2;
-
-	//cout << edgeBegin1 << endl;
-	//cout << edgeEnd1 << endl;
-	//cout << endl;
-	//if (edgeBegin1.w < 0 || edgeEnd1.w < 0) return;
-
 
 	glBegin(GL_POLYGON);
 	glColor3fv(color);
@@ -903,38 +886,39 @@ Save(const char *filename)
 }
 
 //generate clip plane with given two fov angles
-vector<LineSeg> make_clip_lines(float fov_start, float fov_end) {
+vector<LineSeg> make_clip_lines(double fov_start, double fov_end) {
 	//clip plane is formed by these four lines
 	//視錐線 (in x right, z up coordinate)
 	//line1, near
-	LineSeg line1(
-		0.01 * tan(Maze::To_Radians(fov_start / 2.0)),
-		0.01,
-		0.01 * tan(Maze::To_Radians(fov_end / 2.0)),
-		0.01
-	);
+	//LineSeg line1(
+	//	0.01 * tan(Maze::To_Radians(fov_start)),
+	//	0.01,
+	//	0.01 * tan(Maze::To_Radians(fov_end)),
+	//	0.01
+	//);
 	//line2 left
 	LineSeg line2(
-		0.01 * tan(Maze::To_Radians(fov_end / 2.0)),
+		0.01 * tan(Maze::To_Radians(fov_end)),
 		0.01,
-		200 * tan(Maze::To_Radians(fov_end / 2.0)),
-		200
+		200.0 * tan(Maze::To_Radians(fov_end)),
+		200.0
 	);
-	//line3 far
-	LineSeg line3(
-		200 * tan(Maze::To_Radians(fov_end / 2.0)),
-		200,
-		200 * tan(Maze::To_Radians(fov_start / 2.0)),
-		200
-	);
+	////line3 far
+	//LineSeg line3(
+	//	200.0 * tan(Maze::To_Radians(fov_end)),
+	//	200.0,
+	//	200.0 * tan(Maze::To_Radians(fov_start)),
+	//	200.0
+	//);
 	//line4 right
 	LineSeg line4(
-		200 * tan(Maze::To_Radians(fov_start / 2.0)),
-		200,
-		0.01 * tan(Maze::To_Radians(fov_start / 2.0)),
+		200.0 * tan(Maze::To_Radians(fov_start)),
+		200.0,
+		0.01 * tan(Maze::To_Radians(fov_start)),
 		0.01
 	);
-	return vector<LineSeg>({ line1, line2, line3, line4});
+	//return vector<LineSeg>({ line1, line2, line3, line4});
+	return vector<LineSeg>({ line2,  line4 });
 }
 
 //clip an edge with a clip line
@@ -961,9 +945,9 @@ void clip(Edge& edge, const LineSeg clip_line) {
 		1.0, 1.0, 1.0);
 
 	//對edge牆壁來說，與clip_line的cross_param > 1 或是 < 0，代表兩者沒有交點
-	float cross_param = edgeLine.Cross_Param(clip_line);
+	double cross_param = edgeLine.Cross_Param(clip_line);
 	// Case 1 : edge and clip_line has intersection
-	if (cross_param > 0 && cross_param < 1) {
+	if (cross_param > 0.0001 && cross_param < 0.9999) {
 		//intersectino point
 		Vertex newPoint(0, edgeLine.start[0] + cross_param*edge_vector[0], edgeLine.start[1] + cross_param * edge_vector[1]);
 
@@ -984,15 +968,16 @@ void clip(Edge& edge, const LineSeg clip_line) {
 	if (cross_param < 0 || cross_param > 1) {
 		//如果有一點 在 clip line 的右邊(裡邊)，則不更動edge的值
 		//否則將edge設為-1
-		char point_side = clip_edge.Point_Side(edge_x1, edge_y1);
-		if (point_side == Edge::RIGHT) {
-			//don't need to modify
-		}
-		else {
+		char point_side1 = clip_edge.Point_Side(edge_x1, edge_y1);
+		char point_side2 = clip_edge.Point_Side(edge_x2, edge_y2);
+		if (point_side1 == Edge::LEFT && point_side2 == Edge::LEFT) {
 			edge.endpoints[Edge::START]->posn[Vertex::X] = -1;
 			edge.endpoints[Edge::START]->posn[Vertex::Y] = -1;
 			edge.endpoints[Edge::END]->posn[Vertex::X] = -1;
 			edge.endpoints[Edge::END]->posn[Vertex::Y] = -1;
+		}
+		else {
+			//don't need to modify
 		}
 	}
 }
@@ -1001,9 +986,9 @@ vector<vector<Vector4>> Maze::clip_edges() {
 	//construct output vertices
 	vector<vector<Vector4>> output_vertices;
 
-
+	
 	//four clip lines: near left far right
-	vector<LineSeg> clip_lines = make_clip_lines(viewer_fov, -viewer_fov);
+	vector<LineSeg> clip_lines = make_clip_lines(viewer_fov/2, -viewer_fov/2);
 
 	//LineSeg testLine1(0,1,2,1);
 	//LineSeg testLine2(-2,0,-2,3);
@@ -1066,7 +1051,7 @@ vector<vector<Vector4>> Maze::clip_edges() {
 			//outside of the clip plane
 			if (current_edge.endpoints[Edge::START]->posn[Vertex::X] == -1 &&
 				current_edge.endpoints[Edge::START]->posn[Vertex::Y] == -1 &&
-				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1 &&
+				current_edge.endpoints[Edge::END]->posn[Vertex::X] == -1 &&
 				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1) {
 				break;
 			}
@@ -1084,21 +1069,12 @@ vector<vector<Vector4>> Maze::clip_edges() {
 		edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
 		edgeBegin2.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
 		
-		//cout << i << endl;
-		//cout << "After: " << endl;
-		//cout << edgeBegin1 << endl;
-		//cout << edgeEnd1 << endl;
-		//cout << endl;
-		//cout << endl;
-
 		//float x0, x1, y0, y1;
 		//x0 = edges[i]->endpoints[Edge::START]->posn[Vertex::X];
 		//x1 = edges[i]->endpoints[Edge::END]->posn[Vertex::X];
 		//y0 = edges[i]->endpoints[Edge::START]->posn[Vertex::Y];
 		//y1 = edges[i]->endpoints[Edge::END]->posn[Vertex::Y];
 		//float end_points[2][2] = { {x0,y0},{x1,y1} };
-
-
 
 		vector<Vector4> current_vertices = {
 			edgeBegin1,
@@ -1115,36 +1091,39 @@ vector<vector<Vector4>> Maze::clip_edges() {
 vector<vector<Vector4>> Maze::edges_visibility() {
 	vector<Vector4> _init_vector(4, Vector4(-1,-1,-1,-1));
 	vector<vector<Vector4>> result_edges(num_edges, _init_vector);
-	set<Cell> used_cell;
-
-	recursive_visibility(*view_cell, viewer_fov, -viewer_fov, used_cell, result_edges);
+	set<int> used_cell_index;
+	set<int> used_edge_index;
+	used_cell_index.insert(view_cell->index);
+	//cout << "------------------------" << endl;
+	recursive_visibility(view_cell, viewer_fov / 2, -viewer_fov / 2, used_cell_index, used_edge_index, result_edges);
 
 	return result_edges;
 }
 
 void Maze::recursive_visibility(
-	const Cell& current_cell, 
-	const float fov_start, 
-	const float fov_end, 
-	std::set<Cell>& used_cell, 
+	Cell* current_cell,
+	const double fov_start,
+	const double fov_end,
+	std::set<int>& used_cell,
+	std::set<int>& used_edge,
 	std::vector<std::vector<Vector4>>& vertices) {
-	
+
 	//four clip lines: near left far right
 	vector<LineSeg> clip_lines = make_clip_lines(fov_start, fov_end);
 
 	//store edges in current cell and in the camera
 	vector<Edge> view_edges;
+
 	for (int i = 0; i < 4; ++i) {
-		bool is_visible = true;
 
 		//initialize vertices
 		float edge_start[2] = {
-			current_cell.edges[i]->endpoints[Edge::START]->posn[Vertex::X],
-			current_cell.edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
+			current_cell->edges[i]->endpoints[Edge::START]->posn[Vertex::X],
+			current_cell->edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
 		};
 		float edge_end[2] = {
-			current_cell.edges[i]->endpoints[Edge::END]->posn[Vertex::X],
-			current_cell.edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
+			current_cell->edges[i]->endpoints[Edge::END]->posn[Vertex::X],
+			current_cell->edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
 		};
 		Vector4 edgeBegin1(edge_start[Y], 1.0, edge_start[X], 1);
 		Vector4 edgeEnd1(edge_end[Y], 1.0, edge_end[X], 1);
@@ -1157,6 +1136,14 @@ void Maze::recursive_visibility(
 		edgeEnd2 = modelview_matrix * edgeEnd2;
 		edgeBegin2 = modelview_matrix * edgeBegin2;
 
+		//if (current_cell->edges[i]->index == 10) {
+		//	cout << "cell: " << current_cell->index << endl;
+		//	cout << current_cell->edges[i]->index << " before" << endl;
+		//	cout << edgeBegin1 << endl;
+		//	cout << edgeEnd1 << endl;
+		//}
+		
+
 		Edge current_edge(
 			i,
 			new Vertex(0, edgeBegin1.x, -edgeBegin1.z),
@@ -1166,35 +1153,84 @@ void Maze::recursive_visibility(
 			edges[i]->color[2]
 		);
 
-		//clip(current_edge, clip_lines[0]);
+
+		bool is_in_range = true;
 		for (int j = 0; j < clip_lines.size(); ++j) {
 			clip(current_edge, clip_lines[j]);
 			//outside of the clip plane
 			if (current_edge.endpoints[Edge::START]->posn[Vertex::X] == -1 &&
 				current_edge.endpoints[Edge::START]->posn[Vertex::Y] == -1 &&
-				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1 &&
+				current_edge.endpoints[Edge::END]->posn[Vertex::X] == -1 &&
 				current_edge.endpoints[Edge::END]->posn[Vertex::Y] == -1) {
-				is_visible = false;
+				is_in_range = false;
 				break;
 			}
 		}
 
-		if (is_visible) {
-			edgeBegin1.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
-			edgeBegin1.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+		edgeBegin1.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin1.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
 
-			edgeEnd1.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
-			edgeEnd1.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+		edgeEnd1.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd1.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
 
-			edgeEnd2.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
-			edgeEnd2.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
+		edgeEnd2.x = current_edge.endpoints[Edge::END]->posn[Vertex::X];
+		edgeEnd2.z = -current_edge.endpoints[Edge::END]->posn[Vertex::Y];
 
-			edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
-			edgeBegin2.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+		edgeBegin2.x = current_edge.endpoints[Edge::START]->posn[Vertex::X];
+		edgeBegin2.z = -current_edge.endpoints[Edge::START]->posn[Vertex::Y];
+
+		//if (current_cell->edges[i]->index == 10) {
+		//	cout << "is in range: " << is_in_range << "\n";
+		//	cout << "after: " << endl;
+		//	cout << edgeBegin1 << endl;
+		//	cout << edgeEnd1 << endl;
+		//	cout << "\n";
+		//}
+
+
+		//if the current edge is the frustum region, then store it in to the vertices, draw it or do recursive visibility
+		if (is_in_range) {
+			//if (used_edge.find(current_cell->edges[i]->index) != used_edge.end())continue;
+			used_edge.insert(current_cell->edges[i]->index);
+
+
+
+			vector<Vector4> current_vertices = {
+			edgeBegin1,
+			edgeEnd1,
+			edgeEnd2,
+			edgeBegin2
+			};
+
+			
+
+			double start_angle = To_Degrees(atan((double)edgeBegin1.x / -(double)edgeBegin1.z));
+			double end_angle = To_Degrees(atan((double)edgeEnd1.x / -(double)edgeEnd1.z));
+			if (start_angle < end_angle) swap(start_angle, end_angle);
+			if (start_angle > fov_start+1 || end_angle < fov_end-1)continue;
+
+			//if the wall we're looking at is opaque, store it to the vertices that can be draw later
+			if (current_cell->edges[i]->opaque) {
+				vertices[current_cell->edges[i]->index] = current_vertices;
+			}
+			//if the wall is transparent, do recursive visibility
+			else {
+				//find the current edge's neighbor cell
+				
+				Cell* neighbor = current_cell->edges[i]->Neighbor(current_cell);
+
+				//cout << "current cell: " << current_cell->index << endl;
+				//cout << "edge: " << current_cell->edges[i]->index << endl;
+				//cout << "neighbor: " << neighbor->index << endl;
+				//cout << "s_angle: " << start_angle << " e_angle: " << end_angle << endl;
+				//cout << endl;
+
+				if (used_cell.find(neighbor->index) == used_cell.end()) {
+					used_cell.insert(neighbor->index);
+					recursive_visibility(neighbor, start_angle, end_angle, used_cell, used_edge, vertices);
+				}
+				
+			}
 		}
-
-
-
-
 	}
 }

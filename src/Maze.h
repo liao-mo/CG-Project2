@@ -128,7 +128,7 @@ class Maze {
 
 		//return all the edges that are in my visible region using recursive cell method
 		std::vector<std::vector<Vector4>> edges_visibility();
-		void recursive_visibility(const Cell& current_cell, const float fov_start, const float fov_end, std::set<Cell>& used_cell, std::vector<std::vector<Vector4>>& vertices);
+		void recursive_visibility(Cell* current_cell, const double fov_start, const double fov_end, std::set<int>& used_cell, std::set<int>& used_edge, std::vector<std::vector<Vector4>>& vertices);
 
 	private:
 		Cell				*view_cell;// The cell that currently contains the view
